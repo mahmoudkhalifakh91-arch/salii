@@ -11,28 +11,40 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
+
   # المواقيت الفلكية الدقيقة أوفلاين
-adhan: ^2.0.0+1
+  adhan: ^2.0.0+1
+
   # بوصلة القبلة
   flutter_compass: ^0.8.1
+
   # القرآن الكريم كاملاً أوفلاين مع السور والآيات
   quran: ^1.2.5
+
   # تشغيل صوت الأذان والتكبيرات
   audioplayers: ^6.0.0
+
   # حفظ الإعدادات وعداد المسبحة محلياً
   shared_preferences: ^2.2.2
+
   # إشعارات الأذان المجدولة عند وقت كل صلاة
   flutter_local_notifications: ^17.2.2
+
   # تحديد الموقع الجغرافي عبر GPS
   geolocator: ^10.1.0
+
   # تنسيق التواريخ والأرقام
   intl: ^0.19.0
+
   # أيقونات عصرية
   lucide_icons: ^0.257.0
-  # تأثير الاهتزاز عند التسبيح (Haptic Feedback)
+
+  # تأثير الاهتزاز عند التسبيح
   vibration: ^2.0.0
+
   # التوقيت المحلي الدقيق لجدولة إشعارات الصلاة
   timezone: ^0.9.4
+
   flutter_timezone: ^1.0.8
 
 dev_dependencies:
