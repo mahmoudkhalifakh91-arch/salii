@@ -12,7 +12,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   # المواقيت الفلكية الدقيقة أوفلاين
-  adhan: ^2.1.0
+  adhan: adhan: ^2.0.0+1
   # بوصلة القبلة
   flutter_compass: ^0.8.1
   # القرآن الكريم كاملاً أوفلاين مع السور والآيات
