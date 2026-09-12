@@ -99,11 +99,19 @@ class AppBlockService {
 
   /// يجدول Alarm أصلي (native) لحظة كل صلاة، بحيث القفل يشتغل حتى لو
   /// تطبيق صلّي نفسه مقفول أو في الخلفية وقت الأذان.
-  Future<void> schedulePrayerBlocks(List<DateTime> prayerTimes) async {
+  /// [prayers] عبارة عن قائمة من {"name": اسم الصلاة بالعربي, "time": DateTime}
+  Future<void> schedulePrayerBlocks(
+    List<({String name, DateTime time})> prayers,
+  ) async {
     try {
       await _channel.invokeMethod(
         'schedulePrayerBlocks',
-        prayerTimes.map((t) => t.millisecondsSinceEpoch).toList(),
+        prayers
+            .map((p) => {
+                  'name': p.name,
+                  'millis': p.time.millisecondsSinceEpoch,
+                })
+            .toList(),
       );
     } catch (_) {}
   }

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:quran/quran.dart' as quran;
+import 'package:audioplayers/audioplayers.dart';
+import '../services/quran_audio_service.dart';
+import '../services/settings_service.dart';
 
 class SurahDetailScreen extends StatefulWidget {
   final int surahNumber;
@@ -12,6 +15,52 @@ class SurahDetailScreen extends StatefulWidget {
 
 class _SurahDetailScreenState extends State<SurahDetailScreen> {
   double _fontSize = 22.0;
+  bool _isPlaying = false;
+  bool _isLoadingAudio = false;
+  String? _reciterName;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReciter();
+    QuranAudioService.instance.onPlayerStateChanged.listen((state) {
+      if (!mounted) return;
+      setState(() {
+        _isPlaying = state == PlayerState.playing;
+        if (state == PlayerState.playing) _isLoadingAudio = false;
+      });
+    });
+  }
+
+  Future<void> _loadReciter() async {
+    final saved = await SettingsService.instance.getQuranReciter();
+    if (mounted) setState(() => _reciterName = saved?['name']);
+  }
+
+  Future<void> _togglePlay() async {
+    if (_isPlaying) {
+      await QuranAudioService.instance.pause();
+      return;
+    }
+    final saved = await SettingsService.instance.getQuranReciter();
+    // لو المستخدم لسه مختارش قارئ من مكتبة القراءات، نستخدم قارئ افتراضي معروف
+    final server = saved?['server'] ?? 'https://server8.mp3quran.net/afs/';
+    setState(() => _isLoadingAudio = true);
+    final ok = await QuranAudioService.instance
+        .playSurah(server, widget.surahNumber);
+    if (!ok && mounted) {
+      setState(() => _isLoadingAudio = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تعذر تشغيل الصوت، تأكد من اتصال الإنترنت')),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    QuranAudioService.instance.stop();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +74,19 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
         title: Text(surahName, style: const TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: _isLoadingAudio
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  )
+                : Icon(_isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled),
+            tooltip: _reciterName != null
+                ? 'تشغيل بصوت $_reciterName'
+                : 'تشغيل السورة (اختر قارئ من مكتبة القراءات)',
+            onPressed: _togglePlay,
+          ),
           IconButton(
             icon: const Icon(Icons.text_increase),
             tooltip: 'تكبير الخط',

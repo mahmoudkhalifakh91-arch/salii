@@ -6,6 +6,7 @@ import '../services/location_service.dart';
 import '../services/prayer_service.dart';
 import '../services/app_block_service.dart';
 import 'app_block_screen.dart';
+import 'sound_library_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -70,8 +71,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         .scheduleForPrayers(toSchedule, muezzinId: _muezzin);
 
     if (await SettingsService.instance.getAppBlockEnabled()) {
-      await AppBlockService.instance
-          .schedulePrayerBlocks(toSchedule.map((p) => p.time).toList());
+      await AppBlockService.instance.schedulePrayerBlocks(
+        toSchedule.map((p) => (name: p.nameAr, time: p.time)).toList(),
+      );
     }
   }
 
@@ -212,6 +214,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                 ),
+                const SizedBox(height: 24),
+
+                // Section: Sound Library
+                _buildSectionHeader('مكتبة القراءات'),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey.withOpacity(0.15)),
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    leading: const CircleAvatar(
+                      backgroundColor: Color(0x1A0F5132),
+                      child: Icon(Icons.headphones_rounded, color: Color(0xFF0F5132)),
+                    ),
+                    title: const Text('أذان وقرّاء القرآن'),
+                    subtitle: const Text('اختر مؤذن الإشعارات وقارئك المفضل لتشغيل السور'),
+                    trailing: const Icon(Icons.chevron_left_rounded),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const SoundLibraryScreen()),
+                      );
+                    },
+                  ),
+                ),
+
                 const SizedBox(height: 24),
 
                 // Section 3: Smart App Block

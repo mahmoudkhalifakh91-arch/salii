@@ -1,22 +1,15 @@
 package com.salli.salli_app
 
 import android.accessibilityservice.AccessibilityService
-import android.graphics.PixelFormat
-import android.os.Build
-import android.os.Handler
-import android.os.Looper
-import android.view.Gravity
-import android.view.View
-import android.view.WindowManager
+import android.content.Intent
 import android.view.accessibility.AccessibilityEvent
-import android.widget.TextView
 
 /**
  * الخدمة دي هي "المحرك" الفعلي لميزة الوقف الذكي. بتفضل شغالة في
  * الخلفية طول ما المستخدم مفعّلها من إعدادات النظام (Accessibility)،
  * وبترصد أي تبديل بين التطبيقات (TYPE_WINDOW_STATE_CHANGED). لو
- * التطبيق اللي فتحه المستخدم موجود في قائمة "المقفولة"، بترجعه فورًا
- * للشاشة الرئيسية وتعرض رسالة تنبيه بسيطة فوق الشاشة.
+ * التطبيق اللي فتحه المستخدم موجود في قائمة "المقفولة"، بتفتح شاشة
+ * القفل (BlockedAppActivity) فوقه فورًا.
  *
  * ملحوظة: بعض الشركات المصنّعة (شاومي، هواوي، وغيرها) بتوقف الخدمات
  * اللي شغالة في الخلفية بقوة لتوفير البطارية. لو الميزة وقفت تشتغل
@@ -28,8 +21,7 @@ class SalliAccessibilityService : AccessibilityService() {
         var instance: SalliAccessibilityService? = null
     }
 
-    private var overlayView: View? = null
-    private val handler = Handler(Looper.getMainLooper())
+    private var lastBlockedLaunch = 0L
 
     override fun onServiceConnected() {
         super.onServiceConnected()
@@ -39,7 +31,6 @@ class SalliAccessibilityService : AccessibilityService() {
     override fun onDestroy() {
         super.onDestroy()
         if (instance === this) instance = null
-        removeOverlay()
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -49,65 +40,30 @@ class SalliAccessibilityService : AccessibilityService() {
 
         val locked = BlockPrefs.getLockedApps(applicationContext)
         if (locked.contains(packageName)) {
-            blockCurrentApp()
+            launchLockScreen()
         }
     }
 
     /** بتتنفذ لحظة وصول تنبيه الأذان من PrayerBlockReceiver مباشرة. */
-    fun forceHomeIfCurrentAppBlocked() {
-        blockCurrentApp()
+    fun blockCurrentForegroundAppIfNeeded() {
+        launchLockScreen()
     }
 
-    private fun blockCurrentApp() {
-        performGlobalAction(GLOBAL_ACTION_HOME)
-        showOverlay()
+    private fun launchLockScreen() {
+        // نتجنب فتح الشاشة أكتر من مرة في وقت قصير جدًا (تكرار أحداث accessibility)
+        val now = System.currentTimeMillis()
+        if (now - lastBlockedLaunch < 800) return
+        lastBlockedLaunch = now
+
+        val intent = Intent(this, BlockedAppActivity::class.java).apply {
+            addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP
+            )
+        }
+        startActivity(intent)
     }
 
     override fun onInterrupt() {}
-
-    private fun showOverlay() {
-        if (overlayView != null) return
-        try {
-            val wm = getSystemService(WINDOW_SERVICE) as WindowManager
-            val text = TextView(this).apply {
-                text = "🕌 حان وقت الصلاة\nالتطبيق مقفول الآن، تقدر تلغي القفل من إعدادات صلّي"
-                textSize = 15f
-                setTextColor(0xFFFFFFFF.toInt())
-                setBackgroundColor(0xE60F5132.toInt())
-                setPadding(56, 40, 56, 40)
-                gravity = Gravity.CENTER
-            }
-            val overlayType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-            } else {
-                @Suppress("DEPRECATION")
-                WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
-            }
-            val params = WindowManager.LayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                overlayType,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
-                PixelFormat.TRANSLUCENT
-            )
-            params.gravity = Gravity.CENTER
-            wm.addView(text, params)
-            overlayView = text
-            handler.postDelayed({ removeOverlay() }, 3500)
-        } catch (_: Exception) {
-            // لو صلاحية الرسم فوق التطبيقات مش متاحة، نكتفي بإرجاع المستخدم
-            // للرئيسية من غير ما نعرض رسالة (بدل ما نعمل crash)
-        }
-    }
-
-    private fun removeOverlay() {
-        val view = overlayView ?: return
-        try {
-            val wm = getSystemService(WINDOW_SERVICE) as WindowManager
-            wm.removeView(view)
-        } catch (_: Exception) {
-        }
-        overlayView = null
-    }
 }

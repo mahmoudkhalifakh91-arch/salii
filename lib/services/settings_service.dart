@@ -114,6 +114,25 @@ class SettingsService {
     await prefs.setBool('app_block_enabled', enabled);
   }
 
+  // ---- القارئ الافتراضي لتشغيل السور كاملة في شاشة المصحف ----
+  Future<void> setQuranReciter(String id, String name, String server) async {
+    final prefs = await _prefs;
+    await prefs.setString('quran_reciter_id', id);
+    await prefs.setString('quran_reciter_name', name);
+    await prefs.setString('quran_reciter_server', server);
+  }
+
+  Future<Map<String, String>?> getQuranReciter() async {
+    final prefs = await _prefs;
+    final server = prefs.getString('quran_reciter_server');
+    if (server == null) return null;
+    return {
+      'id': prefs.getString('quran_reciter_id') ?? '',
+      'name': prefs.getString('quran_reciter_name') ?? '',
+      'server': server,
+    };
+  }
+
   // ---- عداد المسبحة الإجمالي (تراكمي، لا يتصفر) ----
   Future<int> getTasbeehTotal() async {
     final prefs = await _prefs;

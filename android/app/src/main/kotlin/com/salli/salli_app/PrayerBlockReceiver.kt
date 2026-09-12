@@ -11,7 +11,12 @@ import android.content.Intent
  */
 class PrayerBlockReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        BlockPrefs.lockToggledAppsNow(context)
-        SalliAccessibilityService.instance?.forceHomeIfCurrentAppBlocked()
+        val prayerName = intent.getStringExtra(EXTRA_PRAYER_NAME) ?: ""
+        BlockPrefs.lockToggledAppsNow(context, prayerName)
+        SalliAccessibilityService.instance?.blockCurrentForegroundAppIfNeeded()
+    }
+
+    companion object {
+        const val EXTRA_PRAYER_NAME = "prayer_name"
     }
 }

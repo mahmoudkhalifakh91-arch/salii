@@ -14,6 +14,8 @@ object BlockPrefs {
     private const val PREFS_NAME = "salli_block_prefs"
     private const val KEY_TOGGLED_APPS = "toggled_apps"
     private const val KEY_LOCKED_APPS = "locked_apps"
+    private const val KEY_CURRENT_PRAYER_NAME = "current_prayer_name"
+    private const val KEY_ADHAN_TIMESTAMP = "adhan_timestamp"
 
     private fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -32,12 +34,31 @@ object BlockPrefs {
     fun getLockedApps(context: Context): Set<String> =
         prefs(context).getStringSet(KEY_LOCKED_APPS, emptySet()) ?: emptySet()
 
-    /** لحظة الأذان: كل تطبيق محدد يبقى "مقفول" فورًا. */
-    fun lockToggledAppsNow(context: Context) {
+    /** لحظة الأذان: كل تطبيق محدد يبقى "مقفول"، ونسجل اسم الصلاة ولحظة الأذان. */
+    fun lockToggledAppsNow(context: Context, prayerNameAr: String) {
         setLockedApps(context, getToggledApps(context))
+        prefs(context).edit()
+            .putString(KEY_CURRENT_PRAYER_NAME, prayerNameAr)
+            .putLong(KEY_ADHAN_TIMESTAMP, System.currentTimeMillis())
+            .apply()
     }
 
-    /** إلغاء قفل تطبيق معين يدويًا من شاشة الإعدادات داخل صلّي. */
+    fun getCurrentPrayerName(context: Context): String =
+        prefs(context).getString(KEY_CURRENT_PRAYER_NAME, "") ?: ""
+
+    fun getAdhanTimestamp(context: Context): Long =
+        prefs(context).getLong(KEY_ADHAN_TIMESTAMP, 0L)
+
+    /**
+     * إنهاء جلسة القفل الحالية بس (سواء المستخدم أكّد إنه صلّى، أو خلصت
+     * مهلة الـ 5 دقايق تلقائيًا). التطبيقات ترجع تشتغل دلوقتي، لكن
+     * تفضل "محددة" في الإعدادات وهترجع تتقفل تاني مع الأذان الجاي.
+     */
+    fun endCurrentBlockSession(context: Context) {
+        setLockedApps(context, emptySet())
+    }
+
+    /** إلغاء تحديد تطبيق نهائيًا من شاشة الإعدادات (مش هيتقفل تاني خالص). */
     fun unlockApp(context: Context, packageName: String) {
         val locked = getLockedApps(context).toMutableSet()
         locked.remove(packageName)

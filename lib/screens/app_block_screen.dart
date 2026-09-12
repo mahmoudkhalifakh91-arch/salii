@@ -113,8 +113,9 @@ class _AppBlockScreenState extends State<AppBlockScreen>
         latitude: location.latitude,
         longitude: location.longitude,
       );
-      await AppBlockService.instance
-          .schedulePrayerBlocks(prayers.map((p) => p.time).toList());
+      await AppBlockService.instance.schedulePrayerBlocks(
+        prayers.map((p) => (name: p.nameAr, time: p.time)).toList(),
+      );
     } catch (_) {
       // لو تعذّر تحديد الموقع دلوقتي، هيتجدول تاني تلقائياً أول ما
       // المستخدم يفتح شاشة الإعدادات أو مواقيت الصلاة
