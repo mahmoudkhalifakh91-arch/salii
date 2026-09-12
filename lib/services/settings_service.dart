@@ -103,6 +103,17 @@ class SettingsService {
     await prefs.setInt('$key:$zikrId', count);
   }
 
+  // ---- تفعيل / تعطيل ميزة "الوقف الذكي" (قفل التطبيقات المشتتة وقت الصلاة) ----
+  Future<bool> getAppBlockEnabled() async {
+    final prefs = await _prefs;
+    return prefs.getBool('app_block_enabled') ?? false;
+  }
+
+  Future<void> setAppBlockEnabled(bool enabled) async {
+    final prefs = await _prefs;
+    await prefs.setBool('app_block_enabled', enabled);
+  }
+
   // ---- عداد المسبحة الإجمالي (تراكمي، لا يتصفر) ----
   Future<int> getTasbeehTotal() async {
     final prefs = await _prefs;

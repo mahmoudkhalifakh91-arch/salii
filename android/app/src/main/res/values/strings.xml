@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="accessibility_service_description">
+        تستخدم صلّي هذه الخدمة فقط لإغلاق التطبيقات التي اخترت تقييدها بنفسك
+        تلقائياً عند دخول وقت الصلاة. لا يتم قراءة أو تسجيل أي محتوى من شاشتك.
+    </string>
+</resources>

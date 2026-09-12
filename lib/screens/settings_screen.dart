@@ -4,6 +4,8 @@ import '../services/audio_service.dart';
 import '../services/notification_service.dart';
 import '../services/location_service.dart';
 import '../services/prayer_service.dart';
+import '../services/app_block_service.dart';
+import 'app_block_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -66,6 +68,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           );
     await NotificationService.instance
         .scheduleForPrayers(toSchedule, muezzinId: _muezzin);
+
+    if (await SettingsService.instance.getAppBlockEnabled()) {
+      await AppBlockService.instance
+          .schedulePrayerBlocks(toSchedule.map((p) => p.time).toList());
+    }
   }
 
   Future<void> _previewMuezzinSound() async {
@@ -207,7 +214,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Section 3: About
+                // Section 3: Smart App Block
+                _buildSectionHeader('الوقف الذكي عن التطبيقات المشتتة'),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey.withOpacity(0.15)),
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    leading: const CircleAvatar(
+                      backgroundColor: Color(0x1A0F5132),
+                      child: Icon(Icons.shield_moon_rounded, color: Color(0xFF0F5132)),
+                    ),
+                    title: const Text('قفل التطبيقات وقت الصلاة'),
+                    subtitle: const Text('امنع نفسك من تيك توك وانستجرام وغيرهم لحظة الأذان'),
+                    trailing: const Icon(Icons.chevron_left_rounded),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const AppBlockScreen()),
+                      );
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Section 4: About
                 _buildSectionHeader('حول تطبيق صلي'),
                 Container(
                   padding: const EdgeInsets.all(16),
