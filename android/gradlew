@@ -1,3 +1,0 @@
-#!/bin/sh
-# Lightweight CI fallback: Codemagic provides Gradle on PATH.
-exec gradle "$@"

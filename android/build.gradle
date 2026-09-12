@@ -1,7 +1,0 @@
-// Top-level build file. Plugin versions are managed in settings.gradle.
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
