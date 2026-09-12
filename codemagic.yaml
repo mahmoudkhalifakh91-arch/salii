@@ -1,0 +1,39 @@
+workflows:
+  android-workflow:
+    name: Salli Android Build
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+      vars:
+        PACKAGE_NAME: "com.salli.salli_app"
+    cache:
+      cache_paths:
+        - ~/.pub-cache
+        - $HOME/.gradle/caches
+    scripts:
+      - name: Clean workspace (avoid stale build artifacts filling disk)
+        script: |
+          flutter clean
+          rm -rf $HOME/.gradle/caches/transforms-*
+      - name: Get Flutter packages
+        script: |
+          flutter pub get
+      - name: Build debug APK (fast sanity build)
+        script: |
+          flutter build apk --debug --verbose
+      - name: Build release AAB (for Play Store upload)
+        script: |
+          flutter build appbundle --release --verbose
+    artifacts:
+      - build/app/outputs/**/*.apk
+      - build/app/outputs/**/*.aab
+      - build/app/outputs/**/mapping.txt
+      - flutter_drive.log
+    publishing:
+      email:
+        recipients:
+          - sadat.planning.officer@dakahlia.net
+        notify:
+          success: true
+          failure: true

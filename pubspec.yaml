@@ -1,0 +1,58 @@
+name: salli_app
+description: "صلي - تطبيق إسلامي متكامل لمواقيت الصلاة، الأذكار، المصحف والقبلة"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # المواقيت الفلكية الدقيقة أوفلاين
+  adhan: ^2.0.0+1
+
+  # بوصلة القبلة
+  flutter_compass: ^0.8.1
+
+  # القرآن الكريم كاملاً أوفلاين مع السور والآيات
+  quran: ^1.2.5
+
+  # تشغيل صوت الأذان والتكبيرات
+  audioplayers: ^6.0.0
+
+  # حفظ الإعدادات وعداد المسبحة محلياً
+  shared_preferences: ^2.2.2
+
+  # إشعارات الأذان المجدولة عند وقت كل صلاة
+  flutter_local_notifications: ^17.2.2
+
+  # تحديد الموقع الجغرافي عبر GPS
+  geolocator: ^10.1.0
+
+  # تنسيق التواريخ والأرقام
+  intl: ^0.20.3
+
+  # أيقونات عصرية
+  lucide_icons: ^0.257.0
+
+  # تأثير الاهتزاز عند التسبيح
+  vibration: ^2.0.0
+
+  # التوقيت المحلي الدقيق لجدولة إشعارات الصلاة
+  timezone: ^0.9.4
+
+  flutter_timezone: ^4.1.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/audio/
