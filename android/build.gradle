@@ -5,3 +5,15 @@ allprojects {
         mavenCentral()
     }
 }
+
+// أداة Flutter (flutter_tools) بتدور على نتائج البناء (APK/AAB) جوه
+// <project_root>/build/<module>/outputs/... مش جوه android/app/build مباشرة.
+// من غير إعادة التوجيه دي، الـ Gradle بينجح لكن flutter build بيفشل
+// برسالة "couldn't find it" رغم إن الملف موجود فعلاً في مكان تاني.
+rootProject.buildDir = "../build"
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+subprojects {
+    project.evaluationDependsOn(":app")
+}
