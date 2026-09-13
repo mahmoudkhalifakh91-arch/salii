@@ -92,7 +92,7 @@ class AdhanAlertActivity : Activity() {
                 afd.close()
                 isLooping = false
                 setOnCompletionListener {
-                    isPlaying = false
+                    this@AdhanAlertActivity.isPlaying = false
                     updatePlayPauseUi()
                 }
                 prepare()
