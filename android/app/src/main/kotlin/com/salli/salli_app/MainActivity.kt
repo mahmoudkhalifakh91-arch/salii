@@ -68,12 +68,6 @@ class MainActivity : FlutterActivity() {
                         scheduleAdhanAlerts(items, muezzinId)
                         result.success(null)
                     }
-                    "scheduleAdhanAlarms" -> {
-                        val items = (call.arguments as? List<*>)
-                            ?.mapNotNull { it as? Map<*, *> } ?: emptyList()
-                        scheduleAdhanAlarms(items)
-                        result.success(null)
-                    }
                     else -> result.notImplemented()
                 }
             }
