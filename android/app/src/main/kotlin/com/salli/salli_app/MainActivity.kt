@@ -64,7 +64,7 @@ class MainActivity : FlutterActivity() {
                         val args = call.arguments as? Map<*, *>
                         val items = (args?.get("prayers") as? List<*>)
                             ?.mapNotNull { it as? Map<*, *> } ?: emptyList()
-                        val muezzinId = args?.get("muezzinId") as? String ?: "makkah"
+                        val muezzinId = args?.get("muezzinId") as? String ?: "abdul_basit"
                         scheduleAdhanAlerts(items, muezzinId)
                         result.success(null)
                     }

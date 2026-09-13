@@ -20,12 +20,6 @@ class AudioService {
     {'id': 'abdul_basit', 'label': 'الشيخ عبد الباسط عبد الصمد'},
     {'id': 'madinah', 'label': 'أذان المسجد النبوي الشريف'},
     {'id': 'al_aqsa', 'label': 'أذان المسجد الأقصى المبارك'},
-    {'id': 'makkah', 'label': 'أذان الحرم المكي الشريف'},
-    {'id': 'sudais', 'label': 'الشيخ عبد الرحمن السديس'},
-    {'id': 'shuraim', 'label': 'الشيخ سعود الشريم'},
-    {'id': 'maher_almuaiqly', 'label': 'الشيخ ماهر المعيقلي'},
-    {'id': 'muhammad_thuwaini', 'label': 'الشيخ محمد ثويني'},
-    {'id': 'hafez_alsherazy', 'label': 'الشيخ حافظ الشيرازي'},
   ];
 
   Future<bool> playAdhan(String muezzinId) async {

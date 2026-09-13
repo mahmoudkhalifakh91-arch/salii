@@ -25,7 +25,7 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val prayerName = intent.getStringExtra(EXTRA_PRAYER_NAME) ?: "الصلاة"
-        val muezzinId = intent.getStringExtra(EXTRA_MUEZZIN_ID) ?: "makkah"
+        val muezzinId = intent.getStringExtra(EXTRA_MUEZZIN_ID) ?: "abdul_basit"
 
         val fullScreenIntent = Intent(context, AdhanAlertActivity::class.java).apply {
             putExtra(EXTRA_PRAYER_NAME, prayerName)

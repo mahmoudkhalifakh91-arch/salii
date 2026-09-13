@@ -50,65 +50,19 @@
         <!-- منظر المسجد -->
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="220dp"
-            android:layout_marginTop="4dp">
+            android:layout_height="300dp"
+            android:layout_marginTop="4dp"
+            android:padding="3dp"
+            android:background="@drawable/bg_scene_frame_gold">
 
-            <View
+            <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@drawable/bg_sunset_arch" />
-
-            <View
-                android:layout_width="150dp"
-                android:layout_height="110dp"
-                android:layout_gravity="bottom|center_horizontal"
-                android:layout_marginBottom="18dp"
-                android:background="@drawable/bg_dome" />
-
-            <View
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:layout_gravity="bottom|center_horizontal"
-                android:layout_marginBottom="118dp"
-                android:background="@drawable/bg_dome" />
-
-            <View
-                android:layout_width="18dp"
-                android:layout_height="150dp"
-                android:layout_gravity="bottom|start"
-                android:layout_marginStart="36dp"
-                android:layout_marginBottom="18dp"
-                android:background="@drawable/bg_minaret" />
-
-            <View
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:layout_gravity="bottom|start"
-                android:layout_marginStart="35dp"
-                android:layout_marginBottom="166dp"
-                android:background="@drawable/bg_dome" />
-
-            <View
-                android:layout_width="18dp"
-                android:layout_height="150dp"
-                android:layout_gravity="bottom|end"
-                android:layout_marginEnd="36dp"
-                android:layout_marginBottom="18dp"
-                android:background="@drawable/bg_minaret" />
-
-            <View
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:layout_gravity="bottom|end"
-                android:layout_marginEnd="35dp"
-                android:layout_marginBottom="166dp"
-                android:background="@drawable/bg_dome" />
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="18dp"
-                android:layout_gravity="bottom"
-                android:background="#0B2A1F" />
+                android:background="@drawable/bg_scene_round_mask"
+                android:clipToOutline="true"
+                android:scaleType="centerCrop"
+                android:contentDescription="@null"
+                android:src="@drawable/img_mosque_sunset" />
         </FrameLayout>
 
         <!-- نص "حان الآن موعد" + اسم الصلاة -->

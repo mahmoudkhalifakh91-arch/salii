@@ -46,7 +46,7 @@ class AdhanAlertActivity : Activity() {
         setContentView(R.layout.activity_adhan_alert)
 
         prayerName = intent.getStringExtra(AdhanAlarmReceiver.EXTRA_PRAYER_NAME) ?: "الصلاة"
-        muezzinId = intent.getStringExtra(AdhanAlarmReceiver.EXTRA_MUEZZIN_ID) ?: "makkah"
+        muezzinId = intent.getStringExtra(AdhanAlarmReceiver.EXTRA_MUEZZIN_ID) ?: "abdul_basit"
 
         findViewById<TextView>(R.id.prayerNameText).text = "صلاة $prayerName"
 
