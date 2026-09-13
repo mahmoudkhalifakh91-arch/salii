@@ -298,10 +298,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       SizedBox(height: 10),
                       Text(
-                        'الإصدار 1.0.0 • بنية Flutter الأصلية',
-                        style: TextStyle(fontSize: 11, color: Colors.grey),
+                        'ندعوكم أن تدعوا لصاحب هذا التطبيق بالهداية، وصلاح الحال، والتوفيق الدائم في مستقبله.',
+                        style: TextStyle(fontSize: 13, height: 1.6, color: Color(0xFF0F5132), fontWeight: FontWeight.w600),
                       ),
                     ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Center(
+                  child: Text(
+                    '© 2026 M.r Mahmoud Khalifa — جميع الحقوق محفوظة.',
+                    style: TextStyle(fontSize: 11, color: Colors.grey),
+                    textAlign: TextAlign.center,
                   ),
                 ),
               ],
