@@ -5,6 +5,7 @@ import '../services/app_block_service.dart';
 import '../services/settings_service.dart';
 import '../services/location_service.dart';
 import '../services/prayer_service.dart';
+import 'permission_wizard_screen.dart';
 
 const _brandGreen = Color(0xFF0F5132);
 
@@ -171,97 +172,79 @@ class _AppBlockScreenState extends State<AppBlockScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'إعداد أذونات نظام الهاتف المطلوبة',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  'إعداد أذونات نظام الهاتف المطلوبة',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _allPermissionsGranted
+                      ? Colors.green.withOpacity(0.12)
+                      : Colors.orange.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  _allPermissionsGranted ? 'مكتمل' : 'ناقص',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: _allPermissionsGranted ? Colors.green.shade800 : Colors.orange.shade800,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 4),
           Text(
-            'لازم توافق على الأذونات التلاتة دي عشان تطبيق صلّي يقدر يقفل التطبيقات المشتتة تلقائياً وقت الصلاة',
+            'لازم توافق على 3 أذونات عشان تطبيق صلّي يقدر يقفل التطبيقات المشتتة تلقائياً وقت الصلاة',
             style: TextStyle(fontSize: 12.5, color: Colors.grey.shade700, height: 1.5),
           ),
-          const SizedBox(height: 12),
-          _permissionRow(
-            title: 'إذن الظهور فوق التطبيقات الأخرى (System Overlay)',
-            subtitle: 'يسمح بعرض رسالة تنبيه لحظة قفل التطبيق المشتت',
-            granted: _overlayGranted,
-            onTap: () async {
-              await AppBlockService.instance.requestOverlayPermission();
-            },
-          ),
-          const Divider(height: 24),
-          _permissionRow(
-            title: 'خدمة إمكانية الوصول (Accessibility Service)',
-            subtitle: 'تمكّن نظام صلّي من رصد وإغلاق التطبيقات المحظورة فوراً',
-            granted: _accessibilityGranted,
-            onTap: () async {
-              await AppBlockService.instance.requestAccessibilityPermission();
-            },
-          ),
-          const Divider(height: 24),
-          _permissionRow(
-            title: 'الوصول لإحصائيات الاستخدام (Usage Stats Access)',
-            subtitle: 'يسمح للتطبيق بمعرفة التطبيق الشغّال حالياً في المقدمة',
-            granted: _usageStatsGranted,
-            onTap: () async {
-              await AppBlockService.instance.requestUsageStatsPermission();
-            },
+          const SizedBox(height: 14),
+          _permissionStatusRow('الظهور فوق التطبيقات', _overlayGranted),
+          const SizedBox(height: 8),
+          _permissionStatusRow('خدمة إمكانية الوصول', _accessibilityGranted),
+          const SizedBox(height: 8),
+          _permissionStatusRow('الوصول لإحصائيات الاستخدام', _usageStatsGranted),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: _brandGreen,
+                side: BorderSide(color: _brandGreen),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () async {
+                await Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const PermissionWizardScreen()),
+                );
+                await _refreshPermissions();
+              },
+              child: Text(_allPermissionsGranted ? 'مراجعة الأذونات' : 'ابدأ إعداد الأذونات خطوة بخطوة'),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _permissionRow({
-    required String title,
-    required String subtitle,
-    required bool granted,
-    required VoidCallback onTap,
-  }) {
+  Widget _permissionStatusRow(String title, bool granted) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
-              const SizedBox(height: 4),
-              Text(subtitle, style: TextStyle(fontSize: 11.5, color: Colors.grey.shade600, height: 1.4)),
-            ],
-          ),
+        Icon(
+          granted ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+          size: 18,
+          color: granted ? Colors.green : Colors.grey.shade400,
         ),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: granted ? Colors.green.withOpacity(0.12) : Colors.red.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                granted ? 'مفعل بنجاح' : 'غير مفعل',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: granted ? Colors.green.shade800 : Colors.red.shade700,
-                ),
-              ),
-            ),
-            const SizedBox(height: 6),
-            if (!granted)
-              TextButton(
-                onPressed: onTap,
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                child: const Text('فعّل الآن', style: TextStyle(fontSize: 12)),
-              ),
-          ],
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(title, style: const TextStyle(fontSize: 13)),
         ),
       ],
     );

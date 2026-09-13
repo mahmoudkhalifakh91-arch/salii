@@ -60,6 +60,20 @@ class MainActivity : FlutterActivity() {
                         schedulePrayerBlocks(items)
                         result.success(null)
                     }
+                    "scheduleAdhanAlerts" -> {
+                        val args = call.arguments as? Map<*, *>
+                        val items = (args?.get("prayers") as? List<*>)
+                            ?.mapNotNull { it as? Map<*, *> } ?: emptyList()
+                        val muezzinId = args?.get("muezzinId") as? String ?: "makkah"
+                        scheduleAdhanAlerts(items, muezzinId)
+                        result.success(null)
+                    }
+                    "scheduleAdhanAlarms" -> {
+                        val items = (call.arguments as? List<*>)
+                            ?.mapNotNull { it as? Map<*, *> } ?: emptyList()
+                        scheduleAdhanAlarms(items)
+                        result.success(null)
+                    }
                     else -> result.notImplemented()
                 }
             }
@@ -146,6 +160,29 @@ class MainActivity : FlutterActivity() {
             )
             val autoUnlockMillis = millis + 5 * 60 * 1000L
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, autoUnlockMillis, unlockPending)
+        }
+    }
+
+    private fun scheduleAdhanAlerts(items: List<Map<*, *>>, muezzinId: String) {
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val canScheduleExact =
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()
+        if (!canScheduleExact) return
+
+        items.forEachIndexed { index, item ->
+            val millis = (item["millis"] as? Number)?.toLong() ?: return@forEachIndexed
+            val name = item["name"] as? String ?: ""
+            if (millis <= System.currentTimeMillis()) return@forEachIndexed
+
+            val intent = Intent(this, AdhanAlarmReceiver::class.java).apply {
+                putExtra(AdhanAlarmReceiver.EXTRA_PRAYER_NAME, name)
+                putExtra(AdhanAlarmReceiver.EXTRA_MUEZZIN_ID, muezzinId)
+            }
+            val pendingIntent = PendingIntent.getBroadcast(
+                this, 9400 + index, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, millis, pendingIntent)
         }
     }
 }

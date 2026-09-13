@@ -70,6 +70,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await NotificationService.instance
         .scheduleForPrayers(toSchedule, muezzinId: _muezzin);
 
+    await AppBlockService.instance.scheduleAdhanAlerts(
+      toSchedule.map((p) => (name: p.nameAr, time: p.time)).toList(),
+      _muezzin,
+    );
+
     if (await SettingsService.instance.getAppBlockEnabled()) {
       await AppBlockService.instance.schedulePrayerBlocks(
         toSchedule.map((p) => (name: p.nameAr, time: p.time)).toList(),

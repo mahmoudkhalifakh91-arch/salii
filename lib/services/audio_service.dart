@@ -14,12 +14,13 @@ class AudioService {
 
   /// قائمة المؤذنين المتاحين. الـ id هو نفسه اسم الملف الصوتي بدون امتداد
   /// (مطابق للقيم المستخدمة في شاشة الإعدادات ومكتبة الأصوات).
+  /// المؤذنين اللي عندهم صوت حقيقي فعلاً (مش نغمة placeholder) في الأول.
   static const List<Map<String, String>> availableMuezzins = [
-    {'id': 'makkah', 'label': 'أذان الحرم المكي الشريف'},
+    {'id': 'mishary_alafasy', 'label': 'الشيخ مشاري راشد العفاسي'},
+    {'id': 'abdul_basit', 'label': 'الشيخ عبد الباسط عبد الصمد'},
     {'id': 'madinah', 'label': 'أذان المسجد النبوي الشريف'},
     {'id': 'al_aqsa', 'label': 'أذان المسجد الأقصى المبارك'},
-    {'id': 'abdul_basit', 'label': 'الشيخ عبد الباسط عبد الصمد'},
-    {'id': 'mishary_alafasy', 'label': 'الشيخ مشاري راشد العفاسي'},
+    {'id': 'makkah', 'label': 'أذان الحرم المكي الشريف'},
     {'id': 'sudais', 'label': 'الشيخ عبد الرحمن السديس'},
     {'id': 'shuraim', 'label': 'الشيخ سعود الشريم'},
     {'id': 'maher_almuaiqly', 'label': 'الشيخ ماهر المعيقلي'},

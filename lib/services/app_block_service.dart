@@ -115,4 +115,24 @@ class AppBlockService {
       );
     } catch (_) {}
   }
+
+  /// يجدول شاشة أذان كاملة الشاشة بتشغّل صوت الأذان الحقيقي (من
+  /// res/raw/<muezzinId>.mp3) بالظبط لحظة دخول وقت كل صلاة — بغض
+  /// النظر عن تفعيل ميزة الوقف الذكي من عدمه.
+  Future<void> scheduleAdhanAlerts(
+    List<({String name, DateTime time})> prayers,
+    String muezzinId,
+  ) async {
+    try {
+      await _channel.invokeMethod('scheduleAdhanAlerts', {
+        'muezzinId': muezzinId,
+        'prayers': prayers
+            .map((p) => {
+                  'name': p.name,
+                  'millis': p.time.millisecondsSinceEpoch,
+                })
+            .toList(),
+      });
+    } catch (_) {}
+  }
 }

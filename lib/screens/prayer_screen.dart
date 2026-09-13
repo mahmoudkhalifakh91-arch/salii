@@ -5,6 +5,7 @@ import '../services/prayer_service.dart';
 import '../services/location_service.dart';
 import '../services/settings_service.dart';
 import '../services/notification_service.dart';
+import '../services/app_block_service.dart';
 import '../models/prayer_model.dart';
 
 class PrayerScreen extends StatefulWidget {
@@ -77,6 +78,10 @@ class _PrayerScreenState extends State<PrayerScreen> {
       final muezzinId = await SettingsService.instance.getMuezzin();
       await NotificationService.instance
           .scheduleForPrayers(toSchedule, muezzinId: muezzinId);
+      await AppBlockService.instance.scheduleAdhanAlerts(
+        toSchedule.map((p) => (name: p.nameAr, time: p.time)).toList(),
+        muezzinId,
+      );
     } else {
       await NotificationService.instance.cancelAll();
     }
