@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quran/quran.dart' as quran;
+import 'islamic_library_screen.dart';
 import 'surah_detail_screen.dart';
 
 class QuranScreen extends StatefulWidget {
@@ -28,6 +29,16 @@ class _QuranScreenState extends State<QuranScreen> {
       appBar: AppBar(
         title: const Text('المصحف الشريف', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.auto_stories_outlined),
+            tooltip: 'المكتبة الإسلامية',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const IslamicLibraryScreen()),
+            ),
+          ),
+        ],
       ),
       body: Column(
         children: [
