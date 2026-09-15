@@ -122,9 +122,16 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
   bool _isLoadingAudio = false;
   String? _reciterName;
 
+  // بدل ما المستخدم يرجع لقائمة السور لما يخلّص سورة، بنكمّل تلقائيًا
+  // على السورة اللي بعدها في نفس الصفحة، بالظبط زي تصفّح المصحف الورقي.
+  late final List<int> _loadedSurahs;
+  late final ScrollController _scrollController;
+
   @override
   void initState() {
     super.initState();
+    _loadedSurahs = [widget.surahNumber];
+    _scrollController = ScrollController()..addListener(_maybeLoadNextSurah);
     _loadReciter();
     QuranAudioService.instance.onPlayerStateChanged.listen((state) {
       if (!mounted) return;
@@ -133,6 +140,18 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
         if (state == PlayerState.playing) _isLoadingAudio = false;
       });
     });
+  }
+
+  void _maybeLoadNextSurah() {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    final lastLoaded = _loadedSurahs.last;
+    if (lastLoaded >= 114) return;
+    // نحمّل السورة اللي بعدها لما القارئ يقرب من آخر السورة الحالية،
+    // عشان يلاقيها جاهزة على طول من غير ما يحس بوقفة.
+    if (position.pixels >= position.maxScrollExtent - 700) {
+      setState(() => _loadedSurahs.add(lastLoaded + 1));
+    }
   }
 
   Future<void> _loadReciter() async {
@@ -161,13 +180,12 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     QuranAudioService.instance.stop();
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final surahNum = widget.surahNumber;
+  Widget _buildSurahBlock(int surahNum) {
     final verseCount = quran.getVerseCount(surahNum);
     final surahName = quran.getSurahNameArabic(surahNum);
     final place = quran.getPlaceOfRevelation(surahNum) == 'Makkah' ? 'مكية' : 'مدنية';
@@ -192,10 +210,96 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
       ));
     }
 
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          border: Border.all(color: _kMushafBorder, width: 2),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            border: Border.all(color: _kMushafBorder.withOpacity(0.5), width: 1),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            child: Column(
+              children: [
+                // شريط عنوان السورة الزخرفي
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
+                    color: _kMushafGreen.withOpacity(0.08),
+                    border: Border.all(color: _kMushafBorder),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('❋', style: TextStyle(color: _kMushafBorder, fontSize: 16)),
+                      const SizedBox(width: 10),
+                      Text(
+                        'سورة $surahName',
+                        style: const TextStyle(
+                          fontFamily: 'AmiriQuran',
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: _kMushafGreen,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      const Text('❋', style: TextStyle(color: _kMushafBorder, fontSize: 16)),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '$place • $verseCount آية • ترتيبها $surahNum',
+                  style: TextStyle(fontFamily: 'Amiri', fontSize: 13, color: _kMushafInk.withOpacity(0.65)),
+                ),
+                const SizedBox(height: 20),
+
+                // البسملة (لكل السور ما عدا التوبة)
+                if (surahNum != 9)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 22),
+                    child: Text(
+                      'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontFamily: 'AmiriQuran',
+                        fontSize: 28,
+                        color: _kMushafGreen,
+                      ),
+                    ),
+                  ),
+
+                // نص السورة متصلاً، بنفس تدفّق صفحة المصحف
+                Text.rich(
+                  TextSpan(children: verseSpans),
+                  textAlign: TextAlign.justify,
+                  textDirection: TextDirection.rtl,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final headerSurahName = quran.getSurahNameArabic(widget.surahNumber);
+
     return Scaffold(
       backgroundColor: _kMushafPaper,
       appBar: AppBar(
-        title: Text(surahName, style: const TextStyle(fontFamily: 'Amiri', fontWeight: FontWeight.bold)),
+        title: Text(headerSurahName, style: const TextStyle(fontFamily: 'Amiri', fontWeight: FontWeight.bold)),
         centerTitle: true,
         actions: [
           IconButton(
@@ -223,88 +327,11 @@ class _SurahDetailScreenState extends State<SurahDetailScreen> {
           ),
         ],
       ),
-      body: ListView(
+      body: ListView.builder(
+        controller: _scrollController,
         padding: const EdgeInsets.all(14),
-        children: [
-          // إطار صفحة المصحف
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              border: Border.all(color: _kMushafBorder, width: 2),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Container(
-              padding: const EdgeInsets.all(3),
-              decoration: BoxDecoration(
-                border: Border.all(color: _kMushafBorder.withOpacity(0.5), width: 1),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                child: Column(
-                  children: [
-                    // شريط عنوان السورة الزخرفي
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        color: _kMushafGreen.withOpacity(0.08),
-                        border: Border.all(color: _kMushafBorder),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text('❋', style: TextStyle(color: _kMushafBorder, fontSize: 16)),
-                          const SizedBox(width: 10),
-                          Text(
-                            'سورة $surahName',
-                            style: const TextStyle(
-                              fontFamily: 'AmiriQuran',
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: _kMushafGreen,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          const Text('❋', style: TextStyle(color: _kMushafBorder, fontSize: 16)),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '$place • $verseCount آية • ترتيبها $surahNum',
-                      style: TextStyle(fontFamily: 'Amiri', fontSize: 13, color: _kMushafInk.withOpacity(0.65)),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // البسملة (لكل السور ما عدا التوبة)
-                    if (surahNum != 9)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 22),
-                        child: Text(
-                          'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontFamily: 'AmiriQuran',
-                            fontSize: 28,
-                            color: _kMushafGreen,
-                          ),
-                        ),
-                      ),
-
-                    // نص السورة متصلاً، بنفس تدفّق صفحة المصحف
-                    Text.rich(
-                      TextSpan(children: verseSpans),
-                      textAlign: TextAlign.justify,
-                      textDirection: TextDirection.rtl,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
+        itemCount: _loadedSurahs.length,
+        itemBuilder: (context, index) => _buildSurahBlock(_loadedSurahs[index]),
       ),
     );
   }
