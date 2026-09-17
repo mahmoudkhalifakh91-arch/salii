@@ -52,6 +52,7 @@ class BlockedAppActivity : Activity() {
             hideOathState()
         }
         findViewById<TextView>(R.id.oathDoneButton).setOnClickListener {
+            BlockPrefs.recordPrayerConfirmed(applicationContext)
             BlockPrefs.endCurrentBlockSession(applicationContext)
             finish()
         }

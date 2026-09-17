@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
+import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
@@ -45,6 +46,11 @@ class AdhanAlertActivity : Activity() {
         )
         setContentView(R.layout.activity_adhan_alert)
 
+        // نرفع صوت جهاز الإنذار (Alarm) في النظام لأقصى درجة، عشان الأذان
+        // يتسمع فعلاً حتى لو المستخدم كان مخلي صوت الجهاز واطي أو متوسط.
+        // شريط التحكم في الشاشة بيفضل شغال بعد كده لو حب يخفّضه بنفسه.
+        raiseAlarmStreamVolumeToMax()
+
         prayerName = intent.getStringExtra(AdhanAlarmReceiver.EXTRA_PRAYER_NAME) ?: "الصلاة"
         muezzinId = intent.getStringExtra(AdhanAlarmReceiver.EXTRA_MUEZZIN_ID) ?: "abdul_basit"
 
@@ -73,6 +79,19 @@ class AdhanAlertActivity : Activity() {
         handler.postDelayed({ finish() }, maxDurationMs)
     }
 
+    private fun raiseAlarmStreamVolumeToMax() {
+        try {
+            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
+            // نخليه على أقصى درجة مباشرة (من غير ما نظهر واجهة تغيير الصوت
+            // الخاصة بالنظام) عشان الأذان يوصل صوته بوضوح.
+            audioManager.setStreamVolume(AudioManager.STREAM_ALARM, maxVolume, 0)
+        } catch (_: Exception) {
+            // لو تعذّر لأي سبب (جهاز نادر بيمنعها)، الأذان برضه هيشتغل
+            // بأقصى مكسب صوتي ممكن من جهته هو (راجع playAdhan).
+        }
+    }
+
     private fun playAdhan(muezzinId: String) {
         try {
             val resId = resources.getIdentifier(muezzinId, "raw", packageName)
@@ -91,6 +110,9 @@ class AdhanAlertActivity : Activity() {
                 setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
                 afd.close()
                 isLooping = false
+                // نبدأ بأقصى مكسب صوتي ممكن من المشغّل نفسه (فوق رفع صوت
+                // النظام)، وشريط التحكم في الشاشة يفضل متاح لو حب يخفّضه.
+                setVolume(1f, 1f)
                 setOnCompletionListener {
                     this@AdhanAlertActivity.isPlaying = false
                     updatePlayPauseUi()

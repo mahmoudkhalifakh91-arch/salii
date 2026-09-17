@@ -27,6 +27,18 @@ class MainActivity : FlutterActivity() {
                         requestOverlayPermission()
                         result.success(null)
                     }
+                    "hasFullScreenIntentPermission" ->
+                        result.success(hasFullScreenIntentPermission())
+                    "requestFullScreenIntentPermission" -> {
+                        requestFullScreenIntentPermission()
+                        result.success(null)
+                    }
+                    "getConfirmedPrayerLog" ->
+                        result.success(BlockPrefs.getConfirmedPrayerLog(applicationContext).toList())
+                    "clearConfirmedPrayerLog" -> {
+                        BlockPrefs.clearConfirmedPrayerLog(applicationContext)
+                        result.success(null)
+                    }
                     "isAccessibilityServiceEnabled" ->
                         result.success(isAccessibilityServiceEnabled())
                     "requestAccessibilityPermission" -> {
@@ -83,6 +95,33 @@ class MainActivity : FlutterActivity() {
                 Uri.parse("package:$packageName")
             ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
+        }
+    }
+
+    /**
+     * من أندرويد 14 (API 34) فأعلى، لازم المستخدم يوافق يدويًا (من إعدادات
+     * النظام) على إن تطبيق زي "صلّي" يقدر يفتح شاشة كاملة فوق أي تطبيق تاني
+     * حتى لو الهاتف مش مقفول — دي أهم صلاحية عشان شاشة الأذان "تظهر أمام
+     * كل الشاشات والبرامج" زي ما هو مطلوب بالظبط.
+     */
+    private fun hasFullScreenIntentPermission(): Boolean {
+        if (Build.VERSION.SDK_INT < 34) return true // قبل أندرويد 14 مفيش صلاحية منفصلة لازمة
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+        return notificationManager.canUseFullScreenIntent()
+    }
+
+    private fun requestFullScreenIntentPermission() {
+        if (Build.VERSION.SDK_INT >= 34) {
+            val intent = Intent(
+                Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT,
+                Uri.parse("package:$packageName")
+            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            try {
+                startActivity(intent)
+            } catch (_: Exception) {
+                // بعض الأجهزة مش بتدعم الشاشة دي رغم رفع الـ API؛ نتجاهل بأمان
+            }
         }
     }
 

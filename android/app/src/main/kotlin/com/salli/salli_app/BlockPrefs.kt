@@ -68,4 +68,33 @@ object BlockPrefs {
         toggled.remove(packageName)
         setToggledApps(context, toggled)
     }
+
+    // ---- سجل تأكيد "والله العظيم صليت" (يُقرأ ويُدمج في سجل فلاتر لاحقًا) ----
+    private const val KEY_CONFIRMED_LOG = "confirmed_prayer_log"
+
+    private val arabicNameToId = mapOf(
+        "الفجر" to "fajr",
+        "الظهر" to "dhuhr",
+        "العصر" to "asr",
+        "المغرب" to "maghrib",
+        "العشاء" to "isha"
+    )
+
+    /** يسجّل إن المستخدم أكّد "تم الفرض" للصلاة الحالية في تاريخ النهاردة. */
+    fun recordPrayerConfirmed(context: Context) {
+        val prayerId = arabicNameToId[getCurrentPrayerName(context)] ?: return
+        val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+            .format(java.util.Date())
+        val log = getConfirmedPrayerLog(context).toMutableSet()
+        log.add("$today|$prayerId")
+        prefs(context).edit().putStringSet(KEY_CONFIRMED_LOG, log).apply()
+    }
+
+    fun getConfirmedPrayerLog(context: Context): Set<String> =
+        prefs(context).getStringSet(KEY_CONFIRMED_LOG, emptySet()) ?: emptySet()
+
+    /** تُستدعى من Flutter بعد ما تدمج السجل ده في سجلها الخاص، عشان منكرّرش الدمج. */
+    fun clearConfirmedPrayerLog(context: Context) {
+        prefs(context).edit().putStringSet(KEY_CONFIRMED_LOG, emptySet()).apply()
+    }
 }

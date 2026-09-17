@@ -253,6 +253,7 @@
                 android:layout_weight="1"
                 android:layout_marginHorizontal="8dp"
                 android:max="100"
+                android:progress="100"
                 android:progress="80"
                 android:progressTint="#1D9E75"
                 android:thumbTint="#1D9E75" />
