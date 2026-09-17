@@ -8,6 +8,7 @@ import '../services/notification_service.dart';
 import '../services/app_block_service.dart';
 import '../models/prayer_model.dart';
 import 'prayer_log_screen.dart';
+import '../theme/app_colors.dart';
 
 class PrayerScreen extends StatefulWidget {
   const PrayerScreen({super.key});
@@ -169,7 +170,6 @@ class _PrayerScreenState extends State<PrayerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final now = DateTime.now();
     final dateStr = DateFormat('EEEE، d MMMM yyyy', 'ar').format(now);
 
@@ -205,7 +205,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
                           ? Icons.location_off_outlined
                           : Icons.location_on_outlined,
                       size: 16,
-                      color: Colors.grey.shade600,
+                      color: AppColors.muted(context),
                     ),
                     const SizedBox(width: 6),
                     Expanded(
@@ -213,7 +213,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
                         _locationIsFallback
                             ? 'المواقيت محسوبة على $_locationLabel (فعّل خدمة الموقع لدقة أعلى)'
                             : 'المواقيت محسوبة حسب: $_locationLabel',
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                        style: TextStyle(fontSize: 12, color: AppColors.muted(context)),
                       ),
                     ),
                   ],
@@ -333,7 +333,13 @@ class _PrayerScreenState extends State<PrayerScreen> {
                     const SizedBox(width: 8),
                     Text(
                       '$_streak يوم متتالي أتممت فيه الصلوات الخمس',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF8A6D1E)),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        color: AppColors.isDark(context)
+                            ? const Color(0xFFE5C158)
+                            : const Color(0xFF8A6D1E),
+                      ),
                     ),
                   ],
                 ),
@@ -355,13 +361,13 @@ class _PrayerScreenState extends State<PrayerScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 decoration: BoxDecoration(
                   color: isNext
-                      ? const Color(0xFF0F5132).withOpacity(0.08)
-                      : theme.cardColor,
+                      ? AppColors.brandTint(context)
+                      : AppColors.card(context),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: isNext
-                        ? const Color(0xFF0F5132).withOpacity(0.4)
-                        : Colors.grey.withOpacity(0.15),
+                        ? AppColors.brand(context).withOpacity(0.55)
+                        : AppColors.border(context),
                     width: isNext ? 1.5 : 1,
                   ),
                 ),
@@ -375,7 +381,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
                             padding: const EdgeInsets.all(4),
                             child: Icon(
                               Icons.wb_twilight,
-                              color: Colors.grey.shade400,
+                              color: AppColors.faint(context),
                               size: 22,
                             ),
                           )
@@ -388,8 +394,8 @@ class _PrayerScreenState extends State<PrayerScreen> {
                               child: Icon(
                                 isDone ? Icons.check_circle : Icons.circle_outlined,
                                 color: isDone
-                                    ? const Color(0xFF0F5132)
-                                    : Colors.grey.shade400,
+                                    ? AppColors.brand(context)
+                                    : AppColors.faint(context),
                                 size: 24,
                               ),
                             ),
@@ -402,10 +408,12 @@ class _PrayerScreenState extends State<PrayerScreen> {
                             fontWeight:
                                 isNext ? FontWeight.bold : FontWeight.w600,
                             color: isNext
-                                ? const Color(0xFF0F5132)
-                                : Colors.black87,
+                                ? AppColors.brand(context)
+                                : isDone
+                                    ? AppColors.muted(context)
+                                    : AppColors.text(context),
                             decoration: isDone ? TextDecoration.lineThrough : null,
-                            decorationColor: Colors.grey,
+                            decorationColor: AppColors.muted(context),
                           ),
                         ),
                       ],
@@ -417,8 +425,8 @@ class _PrayerScreenState extends State<PrayerScreen> {
                         fontWeight:
                             isNext ? FontWeight.bold : FontWeight.w500,
                         color: isNext
-                            ? const Color(0xFF0F5132)
-                            : Colors.black87,
+                            ? AppColors.brand(context)
+                            : AppColors.text(context),
                       ),
                     ),
                   ],

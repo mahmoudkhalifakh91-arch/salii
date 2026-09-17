@@ -8,6 +8,7 @@ import '../services/app_block_service.dart';
 import '../services/theme_controller.dart';
 import 'app_block_screen.dart';
 import 'sound_library_screen.dart';
+import '../theme/app_colors.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -120,9 +121,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.card(context),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey.withOpacity(0.15)),
+                    border: Border.all(color: AppColors.border(context)),
                   ),
                   child: Column(
                     children: [
@@ -188,15 +189,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.card(context),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey.withOpacity(0.15)),
+                    border: Border.all(color: AppColors.border(context)),
                   ),
                   child: Column(
                     children: [
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
-                        activeColor: const Color(0xFF0F5132),
+                        activeColor: AppColors.brand(context),
                         title: const Text('تحديد الموقع تلقائياً (GPS)'),
                         subtitle: const Text('حساب مواقيت الصلاة بدقة حسب مكانك الفعلي'),
                         value: _useGPS,
@@ -209,7 +210,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       const Divider(),
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
-                        activeColor: const Color(0xFF0F5132),
+                        activeColor: AppColors.brand(context),
                         title: const Text('تنبيهات الأذان'),
                         subtitle: const Text('إرسال إشعار عند دخول وقت كل صلاة'),
                         value: _notificationsEnabled,
@@ -230,16 +231,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.card(context),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey.withOpacity(0.15)),
+                    border: Border.all(color: AppColors.border(context)),
                   ),
                   child: SwitchListTile(
                     contentPadding: EdgeInsets.zero,
-                    activeColor: const Color(0xFF0F5132),
+                    activeColor: AppColors.brand(context),
                     secondary: Icon(
                       _darkMode ? Icons.dark_mode : Icons.light_mode,
-                      color: const Color(0xFF0F5132),
+                      color: AppColors.brand(context),
                     ),
                     title: const Text('الوضع الليلي (Dark Mode)'),
                     subtitle: const Text('تفعيل الألوان الداكنة في كل شاشات التطبيق'),
@@ -256,15 +257,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _buildSectionHeader('مكتبة القراءات'),
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.card(context),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey.withOpacity(0.15)),
+                    border: Border.all(color: AppColors.border(context)),
                   ),
                   child: ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                    leading: const CircleAvatar(
-                      backgroundColor: Color(0x1A0F5132),
-                      child: Icon(Icons.headphones_rounded, color: Color(0xFF0F5132)),
+                    leading: CircleAvatar(
+                      backgroundColor: AppColors.brandTint(context),
+                      child: Icon(Icons.headphones_rounded, color: AppColors.brand(context)),
                     ),
                     title: const Text('أذان وقرّاء القرآن'),
                     subtitle: const Text('اختر مؤذن الإشعارات وقارئك المفضل لتشغيل السور'),
@@ -283,15 +284,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _buildSectionHeader('الوقف الذكي عن التطبيقات المشتتة'),
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.card(context),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey.withOpacity(0.15)),
+                    border: Border.all(color: AppColors.border(context)),
                   ),
                   child: ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                    leading: const CircleAvatar(
-                      backgroundColor: Color(0x1A0F5132),
-                      child: Icon(Icons.shield_moon_rounded, color: Color(0xFF0F5132)),
+                    leading: CircleAvatar(
+                      backgroundColor: AppColors.brandTint(context),
+                      child: Icon(Icons.shield_moon_rounded, color: AppColors.brand(context)),
                     ),
                     title: const Text('قفل التطبيقات وقت الصلاة'),
                     subtitle: const Text('امنع نفسك من تيك توك وانستجرام وغيرهم لحظة الأذان'),
@@ -311,35 +312,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0F5132).withOpacity(0.06),
+                    color: AppColors.brandTint(context),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFF0F5132).withOpacity(0.2)),
+                    border: Border.all(color: AppColors.brand(context).withOpacity(0.3)),
                   ),
-                  child: const Column(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'تطبيق صلي (Salli)',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF0F5132)),
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.brand(context)),
                       ),
-                      SizedBox(height: 6),
+                      const SizedBox(height: 6),
                       Text(
                         'تطبيق إسلامي مجاني وخالٍ من الإعلانات تماماً. يعمل بنسبة 100% بدون إنترنت لحساب مواقيت الصلاة، قراءة المصحف الشريف، الأذكار والمسبحة، وبوصلة القبلة.',
-                        style: TextStyle(fontSize: 13, height: 1.6, color: Colors.black87),
+                        style: TextStyle(fontSize: 13, height: 1.6, color: AppColors.text(context)),
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       Text(
                         'ندعوكم أن تدعوا لصاحب هذا التطبيق بالهداية، وصلاح الحال، والتوفيق الدائم في مستقبله.',
-                        style: TextStyle(fontSize: 13, height: 1.6, color: Color(0xFF0F5132), fontWeight: FontWeight.w600),
+                        style: TextStyle(fontSize: 13, height: 1.6, color: AppColors.brand(context), fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Center(
+                Center(
                   child: Text(
                     '© 2026 M.r Mahmoud Khalifa — جميع الحقوق محفوظة.',
-                    style: TextStyle(fontSize: 11, color: Colors.grey),
+                    style: TextStyle(fontSize: 11, color: AppColors.muted(context)),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -353,7 +354,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       padding: const EdgeInsets.only(bottom: 8, right: 4),
       child: Text(
         title,
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.grey),
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 14,
+          color: AppColors.muted(context),
+        ),
       ),
     );
   }

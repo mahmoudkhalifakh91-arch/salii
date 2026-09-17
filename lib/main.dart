@@ -5,6 +5,7 @@ import 'screens/onboarding_screen.dart';
 import 'services/notification_service.dart';
 import 'services/settings_service.dart';
 import 'services/theme_controller.dart';
+import 'theme/app_colors.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -62,19 +63,67 @@ class SalliApp extends StatelessWidget {
             useMaterial3: true,
             fontFamily: 'sans-serif',
             brightness: Brightness.dark,
-            scaffoldBackgroundColor: const Color(0xFF121212),
+            // خلفية رمادية مخضرّة خفيفة بدل الأسود الصريح — أريح للعين
+            scaffoldBackgroundColor: const Color(0xFF11150F),
             colorScheme: ColorScheme.fromSeed(
               seedColor: _brandGreen,
               brightness: Brightness.dark,
-              primary: const Color(0xFF4CAF7D),
+              primary: AppColors.brandDark,
+              onPrimary: const Color(0xFF07130D),
               secondary: _brandGold,
-              surface: const Color(0xFF1E1E1E),
+              surface: const Color(0xFF1B211F),
+              onSurface: const Color(0xFFE9EEEB),
             ),
-            cardColor: const Color(0xFF1E1E1E),
+            cardColor: const Color(0xFF1B211F),
+            dividerColor: Colors.white.withOpacity(0.08),
             appBarTheme: const AppBarTheme(
-              backgroundColor: Color(0xFF0F5132),
+              backgroundColor: Color(0xFF16311F),
               elevation: 0,
-              foregroundColor: Colors.white,
+              foregroundColor: Color(0xFFE9EEEB),
+            ),
+            // نصوص أفتح وارتفاع سطر أوسع = قراءة أريح في الليل
+            textTheme: Typography.whiteMountainView.apply(
+              bodyColor: const Color(0xFFE9EEEB),
+              displayColor: const Color(0xFFE9EEEB),
+            ),
+            listTileTheme: const ListTileThemeData(
+              textColor: Color(0xFFE9EEEB),
+              iconColor: Color(0xFFA3AFA9),
+              subtitleTextStyle: TextStyle(
+                color: Color(0xFFA3AFA9),
+                fontSize: 12.5,
+              ),
+            ),
+            iconTheme: const IconThemeData(color: Color(0xFFCBD5CF)),
+            inputDecorationTheme: InputDecorationTheme(
+              labelStyle: const TextStyle(color: Color(0xFFA3AFA9)),
+              hintStyle: const TextStyle(color: Color(0xFF8A958F)),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.white.withOpacity(0.14)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.brandDark, width: 1.5),
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.white.withOpacity(0.14)),
+              ),
+            ),
+            dropdownMenuTheme: const DropdownMenuThemeData(
+              textStyle: TextStyle(color: Color(0xFFE9EEEB)),
+            ),
+            navigationBarTheme: NavigationBarThemeData(
+              backgroundColor: const Color(0xFF1B211F),
+              indicatorColor: AppColors.brandDark.withOpacity(0.18),
+              labelTextStyle: WidgetStateProperty.all(
+                const TextStyle(fontSize: 11.5, color: Color(0xFFCBD5CF)),
+              ),
+            ),
+            snackBarTheme: const SnackBarThemeData(
+              backgroundColor: Color(0xFF242B28),
+              contentTextStyle: TextStyle(color: Color(0xFFE9EEEB)),
             ),
           ),
           home: const _AppEntryPoint(),
@@ -96,7 +145,6 @@ class _AppEntryPoint extends StatelessWidget {
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Scaffold(
-            backgroundColor: Color(0xFFF7F7F5),
             body: Center(child: CircularProgressIndicator()),
           );
         }

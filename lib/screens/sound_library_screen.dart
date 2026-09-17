@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/audio_service.dart';
 import '../services/quran_audio_service.dart';
 import '../services/settings_service.dart';
+import '../theme/app_colors.dart';
 
 const _brandGreen = Color(0xFF0F5132);
 
@@ -34,7 +35,7 @@ class _SoundLibraryScreenState extends State<SoundLibraryScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('مكتبة القراءات'),
         backgroundColor: _brandGreen,
@@ -108,20 +109,20 @@ class _AdhanRecitersTabState extends State<_AdhanRecitersTab> {
         return Container(
           margin: const EdgeInsets.only(bottom: 10),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.card(context),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: isSelected ? _brandGreen : Colors.grey.withOpacity(0.15),
+              color: isSelected ? AppColors.brand(context) : AppColors.border(context),
               width: isSelected ? 1.5 : 1,
             ),
           ),
           child: ListTile(
             leading: CircleAvatar(
               backgroundColor: isSelected
-                  ? _brandGreen.withOpacity(0.12)
-                  : Colors.grey.withOpacity(0.1),
+                  ? AppColors.brandTint(context)
+                  : AppColors.elevated(context),
               child: Icon(Icons.mic_rounded,
-                  color: isSelected ? _brandGreen : Colors.grey.shade600),
+                  color: isSelected ? AppColors.brand(context) : AppColors.muted(context)),
             ),
             title: Text(m['label']!, style: const TextStyle(fontSize: 14)),
             trailing: Row(
@@ -132,14 +133,14 @@ class _AdhanRecitersTabState extends State<_AdhanRecitersTab> {
                     _previewing == id
                         ? Icons.stop_circle_rounded
                         : Icons.play_circle_fill_rounded,
-                    color: _brandGreen,
+                    color: AppColors.brand(context),
                   ),
                   onPressed: () => _preview(id),
                 ),
                 Radio<String>(
                   value: id,
                   groupValue: _selected,
-                  activeColor: _brandGreen,
+                  activeColor: AppColors.brand(context),
                   onChanged: (v) => _select(v!),
                 ),
               ],
@@ -228,7 +229,7 @@ class _QuranRecitersTabState extends State<_QuranRecitersTab> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.wifi_off_rounded, size: 40, color: Colors.grey.shade400),
+              Icon(Icons.wifi_off_rounded, size: 40, color: AppColors.faint(context)),
               const SizedBox(height: 12),
               Text(_error!, textAlign: TextAlign.center),
               const SizedBox(height: 12),
@@ -244,11 +245,11 @@ class _QuranRecitersTabState extends State<_QuranRecitersTab> {
       children: [
         Container(
           width: double.infinity,
-          color: _brandGreen.withOpacity(0.08),
+          color: AppColors.brandTint(context),
           padding: const EdgeInsets.all(12),
-          child: const Text(
+          child: Text(
             'اختر قارئك المفضل لتشغيل السور كاملة داخل شاشة المصحف. التشغيل يحتاج اتصال إنترنت.',
-            style: TextStyle(fontSize: 12, color: Colors.black87),
+            style: TextStyle(fontSize: 12, color: AppColors.text(context)),
             textAlign: TextAlign.center,
           ),
         ),
@@ -262,20 +263,20 @@ class _QuranRecitersTabState extends State<_QuranRecitersTab> {
               return Container(
                 margin: const EdgeInsets.only(bottom: 10),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.card(context),
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: isSelected ? _brandGreen : Colors.grey.withOpacity(0.15),
+                    color: isSelected ? AppColors.brand(context) : AppColors.border(context),
                     width: isSelected ? 1.5 : 1,
                   ),
                 ),
                 child: ListTile(
                   leading: CircleAvatar(
                     backgroundColor: isSelected
-                        ? _brandGreen.withOpacity(0.12)
-                        : Colors.grey.withOpacity(0.1),
+                        ? AppColors.brandTint(context)
+                        : AppColors.elevated(context),
                     child: Icon(Icons.menu_book_rounded,
-                        color: isSelected ? _brandGreen : Colors.grey.shade600),
+                        color: isSelected ? AppColors.brand(context) : AppColors.muted(context)),
                   ),
                   title: Text(r.name, style: const TextStyle(fontSize: 14)),
                   subtitle: Text(r.rewayah, style: const TextStyle(fontSize: 11)),
@@ -287,7 +288,7 @@ class _QuranRecitersTabState extends State<_QuranRecitersTab> {
                           _playingId == r.id
                               ? Icons.stop_circle_rounded
                               : Icons.play_circle_fill_rounded,
-                          color: _brandGreen,
+                          color: AppColors.brand(context),
                         ),
                         tooltip: 'تجربة (الفاتحة)',
                         onPressed: () => _previewFatiha(r),
@@ -295,7 +296,7 @@ class _QuranRecitersTabState extends State<_QuranRecitersTab> {
                       Radio<String>(
                         value: r.id,
                         groupValue: _selectedId,
-                        activeColor: _brandGreen,
+                        activeColor: AppColors.brand(context),
                         onChanged: (_) => _select(r),
                       ),
                     ],

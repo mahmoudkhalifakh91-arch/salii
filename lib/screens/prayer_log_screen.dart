@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/settings_service.dart';
+import '../theme/app_colors.dart';
 
-const _kGreen = Color(0xFF0F5132);
 
 /// شاشة "سجل الصلاة": تقويم شهري يوضح كل يوم كام صلاة من الخمسة اتصلّت
 /// فيه، بالإضافة لملخّص الشهر والسلسلة المتتالية الحالية.
@@ -48,19 +48,22 @@ class _PrayerLogScreenState extends State<PrayerLogScreen> {
   }
 
   Color _colorFor(int done) {
+    final green = AppColors.brand(context);
     switch (done) {
       case 5:
-        return _kGreen;
+        return green;
       case 4:
-        return _kGreen.withOpacity(0.7);
+        return green.withOpacity(0.7);
       case 3:
-        return _kGreen.withOpacity(0.5);
+        return green.withOpacity(0.5);
       case 2:
-        return _kGreen.withOpacity(0.32);
+        return green.withOpacity(0.32);
       case 1:
-        return _kGreen.withOpacity(0.18);
+        return green.withOpacity(0.18);
       default:
-        return Colors.grey.withOpacity(0.1);
+        return AppColors.isDark(context)
+            ? Colors.white.withOpacity(0.07)
+            : Colors.grey.withOpacity(0.1);
     }
   }
 
@@ -81,7 +84,7 @@ class _PrayerLogScreenState extends State<PrayerLogScreen> {
         daysCounted == 0 ? 0 : ((totalDone / (daysCounted * 5)) * 100).round();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F5),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('سجل الصلاة', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
@@ -146,7 +149,7 @@ class _PrayerLogScreenState extends State<PrayerLogScreen> {
                   children: _weekDays
                       .map((d) => Expanded(
                             child: Center(
-                              child: Text(d, style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+                              child: Text(d, style: TextStyle(fontSize: 11, color: AppColors.muted(context))),
                             ),
                           ))
                       .toList(),
@@ -180,7 +183,11 @@ class _PrayerLogScreenState extends State<PrayerLogScreen> {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: done >= 3 ? Colors.white : Colors.black87,
+                          color: done >= 3
+                              ? (AppColors.isDark(context)
+                                  ? const Color(0xFF07130D)
+                                  : Colors.white)
+                              : AppColors.text(context),
                         ),
                       ),
                     );
@@ -204,7 +211,7 @@ class _PrayerLogScreenState extends State<PrayerLogScreen> {
                         const SizedBox(width: 6),
                         Text(
                           n == 0 ? 'لا صلاة' : n == 5 ? '٥/٥' : '$n/٥',
-                          style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
+                          style: TextStyle(fontSize: 11, color: AppColors.muted(context)),
                         ),
                       ],
                     );
@@ -228,17 +235,17 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.withOpacity(0.15)),
+        border: Border.all(color: AppColors.border(context)),
       ),
       child: Column(
         children: [
           Text(icon, style: const TextStyle(fontSize: 20)),
           const SizedBox(height: 6),
-          Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _kGreen)),
+          Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.brand(context))),
           const SizedBox(height: 2),
-          Text(label, textAlign: TextAlign.center, style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600)),
+          Text(label, textAlign: TextAlign.center, style: TextStyle(fontSize: 10.5, color: AppColors.muted(context))),
         ],
       ),
     );

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../services/azkar_service.dart';
 import '../services/settings_service.dart';
 import '../models/azkar_model.dart';
+import '../theme/app_colors.dart';
 
 class AzkarScreen extends StatefulWidget {
   const AzkarScreen({super.key});
@@ -102,12 +103,12 @@ class _AzkarScreenState extends State<AzkarScreen> with SingleTickerProviderStat
             margin: const EdgeInsets.only(bottom: 14),
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: isDone ? const Color(0xFF0F5132).withOpacity(0.06) : Colors.white,
+              color: isDone ? AppColors.brandTint(context) : AppColors.card(context),
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
                 color: isDone
-                    ? const Color(0xFF0F5132).withOpacity(0.4)
-                    : Colors.grey.withOpacity(0.2),
+                    ? AppColors.brand(context).withOpacity(0.5)
+                    : AppColors.border(context),
                 width: isDone ? 1.5 : 1,
               ),
               boxShadow: [
@@ -128,14 +129,14 @@ class _AzkarScreenState extends State<AzkarScreen> with SingleTickerProviderStat
                     fontSize: 17,
                     height: 1.8,
                     fontWeight: FontWeight.w600,
-                    color: isDone ? Colors.grey.shade700 : Colors.black87,
+                    color: isDone ? AppColors.muted(context) : AppColors.text(context),
                   ),
                 ),
                 if (zikr.descriptionAr.isNotEmpty) ...[
                   const SizedBox(height: 10),
                   Text(
                     zikr.descriptionAr,
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                    style: TextStyle(fontSize: 12, color: AppColors.muted(context)),
                   ),
                 ],
                 const SizedBox(height: 14),
@@ -144,20 +145,24 @@ class _AzkarScreenState extends State<AzkarScreen> with SingleTickerProviderStat
                   children: [
                     Text(
                       'التكرار: ${zikr.repeat}',
-                      style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                      style: TextStyle(color: AppColors.muted(context), fontSize: 13),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
                         color: isDone
-                            ? const Color(0xFF0F5132)
-                            : const Color(0xFF0F5132).withOpacity(0.12),
+                            ? AppColors.brand(context)
+                            : AppColors.brandTint(context),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         isDone ? 'اكتمل ✓' : '${zikr.count} / ${zikr.repeat}',
                         style: TextStyle(
-                          color: isDone ? Colors.white : const Color(0xFF0F5132),
+                          color: isDone
+                              ? (AppColors.isDark(context)
+                                  ? const Color(0xFF07130D)
+                                  : Colors.white)
+                              : AppColors.brand(context),
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
                         ),
@@ -192,9 +197,9 @@ class _AzkarScreenState extends State<AzkarScreen> with SingleTickerProviderStat
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.card(context),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.grey.withOpacity(0.2)),
+              border: Border.all(color: AppColors.border(context)),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
@@ -282,7 +287,7 @@ class _AzkarScreenState extends State<AzkarScreen> with SingleTickerProviderStat
           controller: _tabController,
           isScrollable: true,
           labelColor: const Color(0xFF0F5132),
-          unselectedLabelColor: Colors.grey,
+          unselectedLabelColor: AppColors.muted(context),
           indicatorColor: const Color(0xFF0F5132),
           tabs: const [
             Tab(text: 'أذكار الصباح'),

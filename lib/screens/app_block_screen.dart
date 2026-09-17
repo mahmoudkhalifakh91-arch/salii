@@ -6,6 +6,7 @@ import '../services/settings_service.dart';
 import '../services/location_service.dart';
 import '../services/prayer_service.dart';
 import 'permission_wizard_screen.dart';
+import '../theme/app_colors.dart';
 
 const _brandGreen = Color(0xFF0F5132);
 
@@ -134,7 +135,7 @@ class _AppBlockScreenState extends State<AppBlockScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('نظام تقييد التطبيقات وأذونات الهاتف'),
         backgroundColor: _brandGreen,
@@ -159,9 +160,9 @@ class _AppBlockScreenState extends State<AppBlockScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.withOpacity(0.15)),
+        border: Border.all(color: AppColors.border(context)),
       ),
       child: child,
     );
@@ -193,7 +194,9 @@ class _AppBlockScreenState extends State<AppBlockScreen>
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
-                    color: _allPermissionsGranted ? Colors.green.shade800 : Colors.orange.shade800,
+                    color: AppColors.isDark(context)
+                        ? (_allPermissionsGranted ? Colors.green.shade300 : Colors.orange.shade300)
+                        : (_allPermissionsGranted ? Colors.green.shade800 : Colors.orange.shade800),
                   ),
                 ),
               ),
@@ -202,7 +205,7 @@ class _AppBlockScreenState extends State<AppBlockScreen>
           const SizedBox(height: 4),
           Text(
             'لازم توافق على 3 أذونات عشان تطبيق صلّي يقدر يقفل التطبيقات المشتتة تلقائياً وقت الصلاة',
-            style: TextStyle(fontSize: 12.5, color: Colors.grey.shade700, height: 1.5),
+            style: TextStyle(fontSize: 12.5, color: AppColors.muted(context), height: 1.5),
           ),
           const SizedBox(height: 14),
           _permissionStatusRow('الظهور فوق التطبيقات', _overlayGranted),
@@ -240,7 +243,7 @@ class _AppBlockScreenState extends State<AppBlockScreen>
         Icon(
           granted ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
           size: 18,
-          color: granted ? Colors.green : Colors.grey.shade400,
+          color: granted ? Colors.green : AppColors.faint(context),
         ),
         const SizedBox(width: 8),
         Expanded(
@@ -262,7 +265,7 @@ class _AppBlockScreenState extends State<AppBlockScreen>
           const SizedBox(height: 4),
           Text(
             'حدد التطبيقات اللي عايز تتقفل تلقائياً مع دخول وقت كل صلاة، ومش هتفتح تاني إلا لو لغيت القفل من هنا بنفسك',
-            style: TextStyle(fontSize: 12.5, color: Colors.grey.shade700, height: 1.5),
+            style: TextStyle(fontSize: 12.5, color: AppColors.muted(context), height: 1.5),
           ),
           const SizedBox(height: 8),
           ...kBlockableApps.map((app) {
@@ -272,9 +275,9 @@ class _AppBlockScreenState extends State<AppBlockScreen>
               activeColor: Colors.red.shade400,
               secondary: CircleAvatar(
                 backgroundColor: selected
-                    ? Colors.red.withOpacity(0.1)
-                    : Colors.grey.withOpacity(0.12),
-                child: Icon(app.icon, color: selected ? Colors.red.shade400 : Colors.grey.shade600, size: 20),
+                    ? Colors.red.withOpacity(0.15)
+                    : AppColors.elevated(context),
+                child: Icon(app.icon, color: selected ? Colors.red.shade400 : AppColors.muted(context), size: 20),
               ),
               title: Text(app.nameAr, style: const TextStyle(fontSize: 14)),
               value: selected,

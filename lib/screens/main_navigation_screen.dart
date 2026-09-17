@@ -4,6 +4,7 @@ import 'quran_screen.dart';
 import 'azkar_screen.dart';
 import 'qibla_screen.dart';
 import 'settings_screen.dart';
+import '../theme/app_colors.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -32,38 +33,38 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.card(context),
         elevation: 3,
-        indicatorColor: const Color(0xFF0F5132).withOpacity(0.15),
+        indicatorColor: AppColors.brand(context).withOpacity(0.18),
         onDestinationSelected: (index) {
           setState(() {
             _currentIndex = index;
           });
         },
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.access_time),
-            selectedIcon: Icon(Icons.access_time_filled, color: Color(0xFF0F5132)),
+            icon: const Icon(Icons.access_time),
+            selectedIcon: Icon(Icons.access_time_filled, color: AppColors.brand(context)),
             label: 'المواقيت',
           ),
           NavigationDestination(
-            icon: Icon(Icons.menu_book_outlined),
-            selectedIcon: Icon(Icons.menu_book, color: Color(0xFF0F5132)),
+            icon: const Icon(Icons.menu_book_outlined),
+            selectedIcon: Icon(Icons.menu_book, color: AppColors.brand(context)),
             label: 'المصحف',
           ),
           NavigationDestination(
-            icon: Icon(Icons.fingerprint),
-            selectedIcon: Icon(Icons.fingerprint, color: Color(0xFF0F5132)),
+            icon: const Icon(Icons.fingerprint),
+            selectedIcon: Icon(Icons.fingerprint, color: AppColors.brand(context)),
             label: 'الأذكار',
           ),
           NavigationDestination(
-            icon: Icon(Icons.explore_outlined),
-            selectedIcon: Icon(Icons.explore, color: Color(0xFF0F5132)),
+            icon: const Icon(Icons.explore_outlined),
+            selectedIcon: Icon(Icons.explore, color: AppColors.brand(context)),
             label: 'القبلة',
           ),
           NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings, color: Color(0xFF0F5132)),
+            icon: const Icon(Icons.settings_outlined),
+            selectedIcon: Icon(Icons.settings, color: AppColors.brand(context)),
             label: 'الإعدادات',
           ),
         ],

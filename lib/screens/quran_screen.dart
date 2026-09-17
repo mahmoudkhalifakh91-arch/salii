@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:quran/quran.dart' as quran;
 import 'islamic_library_screen.dart';
 import 'surah_detail_screen.dart';
+import '../theme/app_colors.dart';
 
 class QuranScreen extends StatefulWidget {
   const QuranScreen({super.key});
@@ -96,7 +97,7 @@ class _QuranScreenState extends State<QuranScreen> {
                   ),
                   subtitle: Text(
                     '${isMakki ? "مكية" : "مدنية"} • $verseCount آيات',
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                    style: TextStyle(color: AppColors.muted(context), fontSize: 12),
                   ),
                   trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
                   onTap: () {

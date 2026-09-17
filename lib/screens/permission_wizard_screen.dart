@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../services/app_block_service.dart';
+import '../theme/app_colors.dart';
 
 const _brandGreen = Color(0xFF0F5132);
 
@@ -111,7 +112,7 @@ class _PermissionWizardScreenState extends State<PermissionWizardScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('إعداد الوقف الذكي'),
         backgroundColor: _brandGreen,
@@ -138,7 +139,7 @@ class _PermissionWizardScreenState extends State<PermissionWizardScreen>
                   margin: EdgeInsets.only(right: i == _steps.length - 1 ? 0 : 6),
                   height: 5,
                   decoration: BoxDecoration(
-                    color: active ? _brandGreen : Colors.grey.withOpacity(0.2),
+                    color: active ? AppColors.brand(context) : AppColors.border(context),
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
@@ -148,7 +149,7 @@ class _PermissionWizardScreenState extends State<PermissionWizardScreen>
           const SizedBox(height: 8),
           Text(
             'الخطوة ${_currentIndex + 1} من ${_steps.length}',
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+            style: TextStyle(fontSize: 12, color: AppColors.muted(context)),
           ),
           const Spacer(),
           Center(
@@ -172,7 +173,7 @@ class _PermissionWizardScreenState extends State<PermissionWizardScreen>
           Text(
             step.description,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 13.5, color: Colors.grey.shade700, height: 1.6),
+            style: TextStyle(fontSize: 13.5, color: AppColors.muted(context), height: 1.6),
           ),
           const Spacer(),
           SizedBox(
@@ -202,7 +203,7 @@ class _PermissionWizardScreenState extends State<PermissionWizardScreen>
           Text(
             'هترجع هنا تلقائياً بعد التفعيل، وهننقلك للخطوة الجاية لوحدنا',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 11.5, color: Colors.grey.shade500),
+            style: TextStyle(fontSize: 11.5, color: AppColors.faint(context)),
           ),
         ],
       ),
@@ -230,7 +231,7 @@ class _PermissionWizardScreenState extends State<PermissionWizardScreen>
           Text(
             'دلوقتي تقدر ترجع تحدد التطبيقات وتفعّل الوقف الذكي',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 13.5, color: Colors.grey.shade700),
+            style: TextStyle(fontSize: 13.5, color: AppColors.muted(context)),
           ),
           const SizedBox(height: 28),
           SizedBox(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:adhan/adhan.dart';
 import '../services/location_service.dart';
+import '../theme/app_colors.dart';
 
 class QiblaScreen extends StatefulWidget {
   const QiblaScreen({super.key});
@@ -40,7 +41,7 @@ class _QiblaScreenState extends State<QiblaScreen> {
         centerTitle: true,
       ),
       body: _latitude == null || _longitude == null
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF0F5132)))
+          ? Center(child: CircularProgressIndicator(color: AppColors.brand(context)))
           : _buildCompass(_latitude!, _longitude!),
     );
   }
@@ -56,7 +57,7 @@ class _QiblaScreenState extends State<QiblaScreen> {
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFF0F5132)));
+          return Center(child: CircularProgressIndicator(color: AppColors.brand(context)));
         }
 
         final heading = snapshot.data?.heading;
@@ -78,19 +79,28 @@ class _QiblaScreenState extends State<QiblaScreen> {
                   child: Text(
                     'تنبيه: الحساب مبني على موقع تقريبي — فعّل خدمة الموقع لدقة أعلى',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.orange.shade800, fontSize: 12),
+                    style: TextStyle(
+                      color: AppColors.isDark(context)
+                          ? Colors.orange.shade300
+                          : Colors.orange.shade800,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isAligned ? const Color(0xFF0F5132) : Colors.grey.withOpacity(0.1),
+                  color: isAligned
+                      ? AppColors.brand(context)
+                      : AppColors.elevated(context),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   isAligned ? 'أنت متجه نحو القبلة تماماً ✓' : 'وجّه هاتفك نحو الكعبة المشرفة',
                   style: TextStyle(
-                    color: isAligned ? Colors.white : Colors.black87,
+                    color: isAligned
+                        ? (AppColors.isDark(context) ? const Color(0xFF07130D) : Colors.white)
+                        : AppColors.text(context),
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),
@@ -99,7 +109,7 @@ class _QiblaScreenState extends State<QiblaScreen> {
               const SizedBox(height: 16),
               Text(
                 'زاوية القبلة لموقعك: ${qiblaDirection.toStringAsFixed(1)}°',
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                style: TextStyle(color: AppColors.muted(context), fontSize: 13),
               ),
               const SizedBox(height: 36),
 
@@ -111,16 +121,20 @@ class _QiblaScreenState extends State<QiblaScreen> {
                   height: 280,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white,
+                    color: AppColors.isDark(context)
+                        ? const Color(0xFF1B211F)
+                        : Colors.white,
                     border: Border.all(
-                      color: isAligned ? const Color(0xFF0F5132) : Colors.grey.shade300,
+                      color: isAligned
+                          ? AppColors.brand(context)
+                          : AppColors.border(context),
                       width: 4,
                     ),
                     boxShadow: [
                       BoxShadow(
                         color: isAligned
-                            ? const Color(0xFF0F5132).withOpacity(0.25)
-                            : Colors.black.withOpacity(0.06),
+                            ? AppColors.brand(context).withOpacity(0.25)
+                            : Colors.black.withOpacity(0.25),
                         blurRadius: 24,
                         offset: const Offset(0, 6),
                       ),
@@ -130,14 +144,14 @@ class _QiblaScreenState extends State<QiblaScreen> {
                     alignment: Alignment.center,
                     children: [
                       // Dial Markings
-                      const Positioned(
+                      Positioned(
                         top: 14,
                         child: Text(
                           'الكعبة',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
-                            color: Color(0xFF0F5132),
+                            color: AppColors.brand(context),
                           ),
                         ),
                       ),
@@ -145,16 +159,18 @@ class _QiblaScreenState extends State<QiblaScreen> {
                       Icon(
                         Icons.navigation,
                         size: 110,
-                        color: isAligned ? const Color(0xFF0F5132) : const Color(0xFFD4AF37),
+                        color: isAligned
+                            ? AppColors.brand(context)
+                            : AppColors.accent(context),
                       ),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 40),
-              const Text(
+              Text(
                 'ضع الهاتف على سطح مستوٍ للحصول على أدق نتيجة',
-                style: TextStyle(color: Colors.grey, fontSize: 12),
+                style: TextStyle(color: AppColors.muted(context), fontSize: 12),
               ),
             ],
           ),
