@@ -218,7 +218,25 @@ class SettingsService {
     return log.where((e) => e.startsWith(prefix)).map((e) => e.split('|')[1]).toSet();
   }
 
-  /// عدد الأيام المتتالية (بما فيها اليوم أو آخر يوم فيه تسجيل) اللي
+  /// عدد الصلوات المؤدّاة في كل يوم من شهر معيّن، كـ Map من رقم اليوم
+       /// إلى عدد الصلوات (0-5)، لعرضها في تقويم شهري بدون قراءة منفصلة لكل يوم.
+  Future<Map<int, int>> getMonthlySummary(DateTime monthDate) async {
+    final log = await _getPrayerLogRaw();
+    final prefix =
+        '${monthDate.year}-${monthDate.month.toString().padLeft(2, '0')}-';
+    final result = <int, int>{};
+    for (final entry in log) {
+      if (!entry.startsWith(prefix)) continue;
+      final parts = entry.split('|');
+      if (parts.length != 2) continue;
+      final dayStr = parts[0].substring(prefix.length);
+      final day = int.tryParse(dayStr);
+      if (day == null) continue;
+      result[day] = (result[day] ?? 0) + 1;
+    }
+    return result;
+  }
+
   /// اكتملت فيها الصلوات الخمسة كاملة، بالرجوع للخلف من النهارده.
   Future<int> getPrayerStreak() async {
     var streak = 0;

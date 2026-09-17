@@ -7,6 +7,7 @@ import '../services/settings_service.dart';
 import '../services/notification_service.dart';
 import '../services/app_block_service.dart';
 import '../models/prayer_model.dart';
+import 'prayer_log_screen.dart';
 
 class PrayerScreen extends StatefulWidget {
   const PrayerScreen({super.key});
@@ -66,6 +67,22 @@ class _PrayerScreenState extends State<PrayerScreen> {
       _loading = false;
     });
     _updateCountdown();
+
+    // نحدّث ودجت الشاشة الرئيسية بمواقيت اليوم + فجر بكرة (عشان يفضل
+    // معاه صلاة يعرضها كـ"القادمة" حتى بعد ما العشاء يفوت).
+    final tomorrowFajrList = PrayerService.calculateTodayPrayers(
+      latitude: location.latitude,
+      longitude: location.longitude,
+      methodKey: calcMethod,
+      forDate: DateTime.now().add(const Duration(days: 1)),
+    );
+    final tomorrowFajr = tomorrowFajrList.firstWhere((p) => p.id == 'fajr');
+    await AppBlockService.instance.updateWidgetData([
+      ...prayers
+          .where((p) => p.id != 'sunrise')
+          .map((p) => (id: p.id, nameAr: p.nameAr, time: p.time)),
+      (id: 'fajr_tomorrow', nameAr: tomorrowFajr.nameAr, time: tomorrowFajr.time),
+    ]);
 
     if (notificationsEnabled) {
       // لو الصلاة القادمة "isNext" رجعت null (يعني كل صلوات اليوم فاتت)،
@@ -160,6 +177,16 @@ class _PrayerScreenState extends State<PrayerScreen> {
       appBar: AppBar(
         title: const Text('مواقيت الصلاة', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.calendar_month_outlined),
+            tooltip: 'سجل الصلاة',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const PrayerLogScreen()),
+            ),
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: _loadPrayers,
@@ -286,7 +313,13 @@ class _PrayerScreenState extends State<PrayerScreen> {
             const SizedBox(height: 24),
 
             if (_streak > 0)
-              Container(
+              InkWell(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PrayerLogScreen()),
+                ),
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
                 margin: const EdgeInsets.only(bottom: 16),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
@@ -305,6 +338,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
                   ],
                 ),
               ),
+            ),
 
             const Text(
               'صلوات اليوم',

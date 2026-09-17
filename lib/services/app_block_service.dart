@@ -66,6 +66,21 @@ class AppBlockService {
     } catch (_) {}
   }
 
+  /// يحدّث بيانات ودجت "الصلاة القادمة" على الشاشة الرئيسية بمواقيت
+  /// اليوم (+ فجر بكرة عشان الودجت يفضل معاه صلاة يعرضها بعد العشاء).
+  Future<void> updateWidgetData(
+      List<({String id, String nameAr, DateTime time})> prayers) async {
+    try {
+      await _channel.invokeMethod('updateWidgetData', prayers
+          .map((p) => {
+                'id': p.id,
+                'nameAr': p.nameAr,
+                'epochMillis': p.time.millisecondsSinceEpoch,
+              })
+          .toList());
+    } catch (_) {}
+  }
+
   Future<bool> isAccessibilityServiceEnabled() async {
     try {
       return (await _channel
