@@ -39,6 +39,13 @@ class MainActivity : FlutterActivity() {
                         BlockPrefs.clearConfirmedPrayerLog(applicationContext)
                         result.success(null)
                     }
+                    "updateWidgetData" -> {
+                        @Suppress("UNCHECKED_CAST")
+                        val prayers = call.arguments as? List<Map<String, Any?>> ?: emptyList()
+                        PrayerWidgetPrefs.savePrayers(applicationContext, prayers)
+                        NextPrayerWidgetProvider.updateAllWidgets(applicationContext)
+                        result.success(null)
+                    }
                     "isAccessibilityServiceEnabled" ->
                         result.success(isAccessibilityServiceEnabled())
                     "requestAccessibilityPermission" -> {
