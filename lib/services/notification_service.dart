@@ -4,6 +4,7 @@ import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../models/prayer_model.dart';
+import 'app_block_service.dart';
 
 /// خدمة جدولة إشعار عند دخول كل وقت صلاة.
 /// تُستدعى مرة عند بدء التطبيق (initialize) ثم تُستدعى scheduleForPrayers
@@ -51,17 +52,29 @@ class NotificationService {
 
     await _plugin.initialize(initSettings);
 
+    _initialized = true;
+  }
+
+  /// يطلب كل أذونات الإشعارات والتنبيهات الدقيقة دفعة واحدة. اتفصلت عن
+  /// initialize() عشان تتحكم في توقيت ظهورها بنفسك (زي شاشات الترحيب
+  /// الأولى) بدل ما تظهر فجأة أول ما التطبيق يفتح من غير أي شرح للمستخدم.
+  Future<void> requestRuntimePermissions() async {
     final androidImpl = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
     await androidImpl?.requestNotificationsPermission();
     await androidImpl?.requestExactAlarmsPermission();
 
+    // صلاحية شاشة الأذان الكاملة فوق أي تطبيق تاني (أندرويد 14+). لو
+    // مش متاحة، نوجّه المستخدم لشاشة الموافقة الخاصة بالنظام مرة واحدة
+    // عند أول تشغيل بدل ما نسيبها تفشل بصمت وقت الأذان الفعلي.
+    if (!await AppBlockService.instance.hasFullScreenIntentPermission()) {
+      await AppBlockService.instance.requestFullScreenIntentPermission();
+    }
+
     await _plugin
         .resolvePlatformSpecificImplementation<
             IOSFlutterLocalNotificationsPlugin>()
         ?.requestPermissions(alert: true, badge: true, sound: true);
-
-    _initialized = true;
   }
 
   /// يجدول إشعاراً لكل صلاة من مواقيت اليوم (باستثناء الشروق) التي لم يفت وقتها بعد.

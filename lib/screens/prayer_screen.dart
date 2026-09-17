@@ -23,11 +23,14 @@ class _PrayerScreenState extends State<PrayerScreen> {
   bool _loading = true;
   String _locationLabel = '';
   bool _locationIsFallback = false;
+  Set<String> _donePrayerIds = {};
+  int _streak = 0;
 
   @override
   void initState() {
     super.initState();
     _loadPrayers();
+    _loadPrayerLog();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) => _updateCountdown());
   }
 
@@ -85,6 +88,42 @@ class _PrayerScreenState extends State<PrayerScreen> {
     } else {
       await NotificationService.instance.cancelAll();
     }
+  }
+
+  /// يدمج تأكيدات "والله العظيم صليت" اللي حصلت من شاشة القفل الأصلية
+  /// (لو ميزة قفل التطبيقات مفعّلة) في سجل الصلاة الموحّد، ثم يحمّل
+  /// حالة اليوم والسلسلة المتتالية لعرضها.
+  Future<void> _loadPrayerLog() async {
+    final confirmed = await AppBlockService.instance.getConfirmedPrayerLog();
+    if (confirmed.isNotEmpty) {
+      for (final entry in confirmed) {
+        final parts = entry.split('|');
+        if (parts.length != 2) continue;
+        final dateParts = parts[0].split('-');
+        if (dateParts.length != 3) continue;
+        final date = DateTime(
+          int.parse(dateParts[0]),
+          int.parse(dateParts[1]),
+          int.parse(dateParts[2]),
+        );
+        await SettingsService.instance.setPrayerDone(date, parts[1], true);
+      }
+      await AppBlockService.instance.clearConfirmedPrayerLog();
+    }
+
+    final done = await SettingsService.instance.getDonePrayersForDate(DateTime.now());
+    final streak = await SettingsService.instance.getPrayerStreak();
+    if (!mounted) return;
+    setState(() {
+      _donePrayerIds = done;
+      _streak = streak;
+    });
+  }
+
+  Future<void> _togglePrayerDone(String prayerId) async {
+    final isDone = _donePrayerIds.contains(prayerId);
+    await SettingsService.instance.setPrayerDone(DateTime.now(), prayerId, !isDone);
+    await _loadPrayerLog();
   }
 
   void _updateCountdown() {
@@ -246,6 +285,27 @@ class _PrayerScreenState extends State<PrayerScreen> {
             ),
             const SizedBox(height: 24),
 
+            if (_streak > 0)
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD4AF37).withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.4)),
+                ),
+                child: Row(
+                  children: [
+                    const Text('🔥', style: TextStyle(fontSize: 18)),
+                    const SizedBox(width: 8),
+                    Text(
+                      '$_streak يوم متتالي أتممت فيه الصلوات الخمس',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF8A6D1E)),
+                    ),
+                  ],
+                ),
+              ),
+
             const Text(
               'صلوات اليوم',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -255,6 +315,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
             // Prayer Cards List
             ..._prayers.map((prayer) {
               final isNext = prayer.isNext;
+              final isDone = _donePrayerIds.contains(prayer.id);
               return Container(
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -275,14 +336,31 @@ class _PrayerScreenState extends State<PrayerScreen> {
                   children: [
                     Row(
                       children: [
-                        Icon(
-                          Icons.access_time_filled,
-                          color: isNext
-                              ? const Color(0xFF0F5132)
-                              : Colors.grey.shade400,
-                          size: 22,
-                        ),
-                        const SizedBox(width: 14),
+                        if (prayer.id == 'sunrise')
+                          Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: Icon(
+                              Icons.wb_twilight,
+                              color: Colors.grey.shade400,
+                              size: 22,
+                            ),
+                          )
+                        else
+                          InkWell(
+                            onTap: () => _togglePrayerDone(prayer.id),
+                            borderRadius: BorderRadius.circular(20),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4),
+                              child: Icon(
+                                isDone ? Icons.check_circle : Icons.circle_outlined,
+                                color: isDone
+                                    ? const Color(0xFF0F5132)
+                                    : Colors.grey.shade400,
+                                size: 24,
+                              ),
+                            ),
+                          ),
+                        const SizedBox(width: 10),
                         Text(
                           prayer.nameAr,
                           style: TextStyle(
@@ -292,6 +370,8 @@ class _PrayerScreenState extends State<PrayerScreen> {
                             color: isNext
                                 ? const Color(0xFF0F5132)
                                 : Colors.black87,
+                            decoration: isDone ? TextDecoration.lineThrough : null,
+                            decorationColor: Colors.grey,
                           ),
                         ),
                       ],

@@ -28,6 +28,44 @@ class AppBlockService {
     } catch (_) {}
   }
 
+  /// من أندرويد 14 فأعلى، صلاحية منفصلة لازمة عشان شاشة الأذان تقدر
+  /// "تظهر أمام كل الشاشات والبرامج" حتى لو الهاتف مش مقفول ومش بس
+  /// وقت القفل. قبل أندرويد 14 بترجع true دايمًا (مش لازمة أصلاً).
+  Future<bool> hasFullScreenIntentPermission() async {
+    try {
+      return (await _channel
+              .invokeMethod<bool>('hasFullScreenIntentPermission')) ??
+          true;
+    } catch (_) {
+      return true;
+    }
+  }
+
+  Future<void> requestFullScreenIntentPermission() async {
+    try {
+      await _channel.invokeMethod('requestFullScreenIntentPermission');
+    } catch (_) {}
+  }
+
+  /// سجل تأكيدات "والله العظيم صليت" اللي حصلت من شاشة القفل الأصلية،
+  /// كل عنصر بصيغة "yyyy-MM-dd|prayerId". يُستخدم عشان يندمج في سجل
+  /// الصلاة الموحّد (SettingsService) بدل ما يفضل منعزل في التخزين الأصلي.
+  Future<List<String>> getConfirmedPrayerLog() async {
+    try {
+      final result =
+          await _channel.invokeMethod<List<dynamic>>('getConfirmedPrayerLog');
+      return result?.map((e) => e.toString()).toList() ?? const [];
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  Future<void> clearConfirmedPrayerLog() async {
+    try {
+      await _channel.invokeMethod('clearConfirmedPrayerLog');
+    } catch (_) {}
+  }
+
   Future<bool> isAccessibilityServiceEnabled() async {
     try {
       return (await _channel

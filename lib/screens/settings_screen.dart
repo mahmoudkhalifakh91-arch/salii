@@ -5,6 +5,7 @@ import '../services/notification_service.dart';
 import '../services/location_service.dart';
 import '../services/prayer_service.dart';
 import '../services/app_block_service.dart';
+import '../services/theme_controller.dart';
 import 'app_block_screen.dart';
 import 'sound_library_screen.dart';
 
@@ -20,6 +21,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _muezzin = 'abdul_basit';
   bool _notificationsEnabled = true;
   bool _useGPS = true;
+  bool _darkMode = false;
   bool _loading = true;
   bool _previewingSound = false;
 
@@ -35,6 +37,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final notificationsEnabled =
         await SettingsService.instance.getNotificationsEnabled();
     final useGps = await SettingsService.instance.getUseGps();
+    final darkMode = await SettingsService.instance.getDarkMode();
 
     if (!mounted) return;
     setState(() {
@@ -42,6 +45,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _muezzin = muezzin;
       _notificationsEnabled = notificationsEnabled;
       _useGPS = useGps;
+      _darkMode = darkMode;
       _loading = false;
     });
   }
@@ -217,6 +221,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                       ),
                     ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Section: Appearance (Dark theme toggle)
+                _buildSectionHeader('المظهر'),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey.withOpacity(0.15)),
+                  ),
+                  child: SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    activeColor: const Color(0xFF0F5132),
+                    secondary: Icon(
+                      _darkMode ? Icons.dark_mode : Icons.light_mode,
+                      color: const Color(0xFF0F5132),
+                    ),
+                    title: const Text('الوضع الليلي (Dark Mode)'),
+                    subtitle: const Text('تفعيل الألوان الداكنة في كل شاشات التطبيق'),
+                    value: _darkMode,
+                    onChanged: (v) async {
+                      setState(() => _darkMode = v);
+                      await ThemeController.instance.toggle(v);
+                    },
                   ),
                 ),
                 const SizedBox(height: 24),

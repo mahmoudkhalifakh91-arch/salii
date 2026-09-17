@@ -13,6 +13,7 @@ class SettingsService {
   static const _keyLastLat = 'last_lat';
   static const _keyLastLng = 'last_lng';
   static const _keyLastCity = 'last_city';
+  static const _keyDarkMode = 'dark_mode';
 
   Future<SharedPreferences> get _prefs async =>
       SharedPreferences.getInstance();
@@ -37,6 +38,17 @@ class SettingsService {
   Future<void> setMuezzin(String muezzin) async {
     final prefs = await _prefs;
     await prefs.setString(_keyMuezzin, muezzin);
+  }
+
+  // ---- الوضع الليلي (Dark Mode) ----
+  Future<bool> getDarkMode() async {
+    final prefs = await _prefs;
+    return prefs.getBool(_keyDarkMode) ?? false;
+  }
+
+  Future<void> setDarkMode(bool enabled) async {
+    final prefs = await _prefs;
+    await prefs.setBool(_keyDarkMode, enabled);
   }
 
   // ---- تفعيل / تعطيل إشعارات الأذان ----
@@ -142,5 +154,88 @@ class SettingsService {
   Future<void> setTasbeehTotal(int total) async {
     final prefs = await _prefs;
     await prefs.setInt('tasbeeh_total', total);
+  }
+
+  // ---- هل خلّص المستخدم شاشات الترحيب (Onboarding) أول مرة يفتح التطبيق ----
+  Future<bool> getOnboardingComplete() async {
+    final prefs = await _prefs;
+    return prefs.getBool('onboarding_complete') ?? false;
+  }
+
+  Future<void> setOnboardingComplete(bool complete) async {
+    final prefs = await _prefs;
+    await prefs.setBool('onboarding_complete', complete);
+  }
+
+  // ---- عدد الدقايق قبل الأذان اللي يوصل فيها تذكير مسبق ----
+  Future<int> getReminderMinutesBeforeAdhan() async {
+    final prefs = await _prefs;
+    return prefs.getInt('reminder_minutes_before_adhan') ?? 10;
+  }
+
+  Future<void> setReminderMinutesBeforeAdhan(int minutes) async {
+    final prefs = await _prefs;
+    await prefs.setInt('reminder_minutes_before_adhan', minutes);
+  }
+
+  // ---- سجل الصلوات المؤدّاة: مجموعة نصوص بصيغة "yyyy-MM-dd|prayerId" ----
+  static const _keyPrayerLog = 'prayer_log';
+  static const dailyPrayerIds = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
+
+  String _dateKey(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  Future<Set<String>> _getPrayerLogRaw() async {
+    final prefs = await _prefs;
+    return (prefs.getStringList(_keyPrayerLog) ?? const []).toSet();
+  }
+
+  Future<void> _setPrayerLogRaw(Set<String> entries) async {
+    final prefs = await _prefs;
+    await prefs.setStringList(_keyPrayerLog, entries.toList());
+  }
+
+  Future<bool> isPrayerDone(DateTime date, String prayerId) async {
+    final log = await _getPrayerLogRaw();
+    return log.contains('${_dateKey(date)}|$prayerId');
+  }
+
+  Future<void> setPrayerDone(DateTime date, String prayerId, bool done) async {
+    final log = await _getPrayerLogRaw();
+    final key = '${_dateKey(date)}|$prayerId';
+    if (done) {
+      log.add(key);
+    } else {
+      log.remove(key);
+    }
+    await _setPrayerLogRaw(log);
+  }
+
+  /// كل الصلوات المؤدّاة في يوم معيّن (كمجموعة أرقام الصلوات: fajr, dhuhr...)
+  Future<Set<String>> getDonePrayersForDate(DateTime date) async {
+    final log = await _getPrayerLogRaw();
+    final prefix = '${_dateKey(date)}|';
+    return log.where((e) => e.startsWith(prefix)).map((e) => e.split('|')[1]).toSet();
+  }
+
+  /// عدد الأيام المتتالية (بما فيها اليوم أو آخر يوم فيه تسجيل) اللي
+  /// اكتملت فيها الصلوات الخمسة كاملة، بالرجوع للخلف من النهارده.
+  Future<int> getPrayerStreak() async {
+    var streak = 0;
+    var day = DateTime.now();
+    // لو النهارده لسه لم تكتمل صلواته الخمس (طبيعي قبل العشاء)، نبدأ العدّ
+    // من إمبارح عشان يوم النهارده الجاري ميقطعش السلسلة قبل ما يخلص.
+    final today = await getDonePrayersForDate(day);
+    if (today.length < dailyPrayerIds.length) {
+      day = day.subtract(const Duration(days: 1));
+    }
+    while (true) {
+      final done = await getDonePrayersForDate(day);
+      if (done.length < dailyPrayerIds.length) break;
+      streak++;
+      day = day.subtract(const Duration(days: 1));
+      if (streak > 3650) break; // حماية من حلقة لا نهائية نظريًا فقط
+    }
+    return streak;
   }
 }
