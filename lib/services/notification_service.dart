@@ -83,12 +83,18 @@ class NotificationService {
   Future<void> scheduleForPrayers(
     List<PrayerInfo> prayers, {
     String? muezzinId,
+    int reminderMinutes = 0,
+    bool silent = false,
   }) async {
     if (!_initialized) await initialize();
     await _plugin.cancelAll();
 
     NotificationDetails notificationDetails;
-    if (muezzinId != null) {
+    if (silent) {
+      // شاشة الأذان الأصلية هي اللي بتشغّل الصوت، فالإشعار يكون صامت
+      // عشان الأذان ما يتسمعش مرتين في نفس اللحظة.
+      notificationDetails = _silentNotificationDetails();
+    } else if (muezzinId != null) {
       // نحاول نستخدم صوت الأذان المخصص (res/raw/<muezzinId>.mp3). لو الملف
       // مش موجود، ماكس/الأندرويد هيرجع لصوت النظام الافتراضي من غير ما يعمل crash.
       try {
@@ -161,7 +167,63 @@ class NotificationService {
           );
         } catch (_) {}
       }
+
+      // تنبيه مسبق قبل الأذان بعدد الدقايق اللي اختارها المستخدم
+      if (reminderMinutes > 0) {
+        final remindAt = scheduled.subtract(Duration(minutes: reminderMinutes));
+        if (remindAt.isAfter(now)) {
+          try {
+            await _plugin.zonedSchedule(
+              1000 + notificationId,
+              'باقي $reminderMinutes دقيقة على أذان ${prayer.nameAr}',
+              'استعد للصلاة',
+              remindAt,
+              _reminderNotificationDetails(),
+              androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+              uiLocalNotificationDateInterpretation:
+                  UILocalNotificationDateInterpretation.absoluteTime,
+            );
+          } on PlatformException {
+            try {
+              await _plugin.zonedSchedule(
+                1000 + notificationId,
+                'باقي $reminderMinutes دقيقة على أذان ${prayer.nameAr}',
+                'استعد للصلاة',
+                remindAt,
+                _reminderNotificationDetails(),
+                androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+                uiLocalNotificationDateInterpretation:
+                    UILocalNotificationDateInterpretation.absoluteTime,
+              );
+            } catch (_) {}
+          }
+        }
+      }
     }
+  }
+
+  NotificationDetails _silentNotificationDetails() {
+    const androidDetails = AndroidNotificationDetails(
+      'prayer_times_channel_silent',
+      'مواقيت الصلاة (صامت)',
+      channelDescription: _channelDescription,
+      importance: Importance.high,
+      priority: Priority.high,
+      category: AndroidNotificationCategory.alarm,
+      playSound: false,
+    );
+    return const NotificationDetails(android: androidDetails);
+  }
+
+  NotificationDetails _reminderNotificationDetails() {
+    const androidDetails = AndroidNotificationDetails(
+      'prayer_reminder_channel',
+      'تنبيه قبل الأذان',
+      channelDescription: 'تذكير قبل دخول وقت الصلاة بدقائق',
+      importance: Importance.high,
+      priority: Priority.high,
+    );
+    return const NotificationDetails(android: androidDetails);
   }
 
   NotificationDetails _defaultNotificationDetails() {

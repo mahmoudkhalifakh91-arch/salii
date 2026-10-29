@@ -24,7 +24,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _useGPS = true;
   bool _darkMode = false;
   bool _loading = true;
-  bool _previewingSound = false;
+  int _reminderMinutes = 10;
 
   @override
   void initState() {
@@ -39,6 +39,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         await SettingsService.instance.getNotificationsEnabled();
     final useGps = await SettingsService.instance.getUseGps();
     final darkMode = await SettingsService.instance.getDarkMode();
+    final reminder =
+        await SettingsService.instance.getReminderMinutesBeforeAdhan();
 
     if (!mounted) return;
     setState(() {
@@ -47,6 +49,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _notificationsEnabled = notificationsEnabled;
       _useGPS = useGps;
       _darkMode = darkMode;
+      _reminderMinutes = reminder;
       _loading = false;
     });
   }
@@ -71,20 +74,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _previewMuezzinSound() async {
-    if (_previewingSound) return;
-    setState(() => _previewingSound = true);
-    final ok = await AudioService.instance.playAdhan(_muezzin);
-    if (!mounted) return;
-    setState(() => _previewingSound = false);
-    if (!ok) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'الملف الصوتي غير متوفر بعد — أضف ملفات الأذان في assets/audio/',
-          ),
-        ),
-      );
-    }
+    final ok = await AudioService.instance.togglePreview(_muezzin);
+    if (!mounted || ok) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('تعذر تشغيل الصوت — الملف غير موجود')),
+    );
   }
 
   @override
@@ -151,16 +145,45 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       const SizedBox(height: 8),
                       Align(
                         alignment: Alignment.centerRight,
-                        child: TextButton.icon(
-                          onPressed: _previewingSound ? null : _previewMuezzinSound,
-                          icon: Icon(
-                            _previewingSound
-                                ? Icons.hourglass_top
-                                : Icons.play_circle_outline,
-                            size: 20,
-                          ),
-                          label: const Text('تجربة الصوت'),
+                        child: ValueListenableBuilder<String?>(
+                          valueListenable: AudioService.instance.playingId,
+                          builder: (context, playing, _) {
+                            final isPlaying = playing == _muezzin;
+                            return TextButton.icon(
+                              onPressed: _previewMuezzinSound,
+                              icon: Icon(
+                                isPlaying
+                                    ? Icons.stop_circle_outlined
+                                    : Icons.play_circle_outline,
+                                size: 20,
+                              ),
+                              label: Text(isPlaying ? 'إيقاف التجربة' : 'تجربة الصوت'),
+                            );
+                          },
                         ),
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<int>(
+                        value: _reminderMinutes,
+                        decoration: const InputDecoration(
+                          labelText: 'التنبيه قبل الأذان',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: const [
+                          DropdownMenuItem(value: 0, child: Text('بدون تنبيه مسبق')),
+                          DropdownMenuItem(value: 5, child: Text('قبل الأذان بـ 5 دقائق')),
+                          DropdownMenuItem(value: 10, child: Text('قبل الأذان بـ 10 دقائق')),
+                          DropdownMenuItem(value: 15, child: Text('قبل الأذان بـ 15 دقيقة')),
+                          DropdownMenuItem(value: 20, child: Text('قبل الأذان بـ 20 دقيقة')),
+                          DropdownMenuItem(value: 30, child: Text('قبل الأذان بـ 30 دقيقة')),
+                        ],
+                        onChanged: (v) async {
+                          final minutes = v ?? 10;
+                          setState(() => _reminderMinutes = minutes);
+                          await SettingsService.instance
+                              .setReminderMinutesBeforeAdhan(minutes);
+                          await _rescheduleNotifications();
+                        },
                       ),
                     ],
                   ),

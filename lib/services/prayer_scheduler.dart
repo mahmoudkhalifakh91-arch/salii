@@ -1,6 +1,7 @@
 import 'app_block_service.dart';
 import 'notification_service.dart';
 import 'prayer_service.dart';
+import 'settings_service.dart';
 
 /// نقطة واحدة لجدولة كل تنبيهات الصلاة (إشعار الأذان + شاشة الأذان الأصلية
 /// + قفل التطبيقات) لعدة أيام قدّام. كانت الجدولة مكرّرة في 3 شاشات وبتغطي
@@ -28,8 +29,17 @@ class PrayerScheduler {
     final slots = upcoming.map((p) => (name: p.nameAr, time: p.time)).toList();
 
     if (notificationsEnabled) {
-      await NotificationService.instance
-          .scheduleForPrayers(upcoming, muezzinId: muezzinId);
+      final reminder =
+          await SettingsService.instance.getReminderMinutesBeforeAdhan();
+      // لو شاشة الأذان الكاملة مسموحة، هي اللي بتشغّل الصوت والإشعار يبقى صامت
+      final silent =
+          await AppBlockService.instance.hasFullScreenIntentPermission();
+      await NotificationService.instance.scheduleForPrayers(
+        upcoming,
+        muezzinId: muezzinId,
+        reminderMinutes: reminder,
+        silent: silent,
+      );
       await AppBlockService.instance.scheduleAdhanAlerts(slots, muezzinId);
     } else {
       await NotificationService.instance.cancelAll();

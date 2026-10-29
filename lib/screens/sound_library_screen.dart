@@ -69,7 +69,6 @@ class _AdhanRecitersTab extends StatefulWidget {
 
 class _AdhanRecitersTabState extends State<_AdhanRecitersTab> {
   String? _selected;
-  String? _previewing;
 
   @override
   void initState() {
@@ -85,16 +84,12 @@ class _AdhanRecitersTabState extends State<_AdhanRecitersTab> {
   }
 
   Future<void> _preview(String id) async {
-    setState(() => _previewing = id);
-    final ok = await AudioService.instance.playAdhan(id);
+    final ok = await AudioService.instance.togglePreview(id);
     if (!ok && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('تعذر تشغيل الصوت — الملف غير موجود')),
       );
     }
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) setState(() => _previewing = null);
-    });
   }
 
   @override
@@ -128,14 +123,17 @@ class _AdhanRecitersTabState extends State<_AdhanRecitersTab> {
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                IconButton(
-                  icon: Icon(
-                    _previewing == id
-                        ? Icons.stop_circle_rounded
-                        : Icons.play_circle_fill_rounded,
-                    color: AppColors.brand(context),
+                ValueListenableBuilder<String?>(
+                  valueListenable: AudioService.instance.playingId,
+                  builder: (context, playing, _) => IconButton(
+                    icon: Icon(
+                      playing == id
+                          ? Icons.stop_circle_rounded
+                          : Icons.play_circle_fill_rounded,
+                      color: AppColors.brand(context),
+                    ),
+                    onPressed: () => _preview(id),
                   ),
-                  onPressed: () => _preview(id),
                 ),
                 Radio<String>(
                   value: id,
