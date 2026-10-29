@@ -320,6 +320,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
+                        'تطبيق صلي (Salli)',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.brand(context)),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'تطبيق إسلامي مجاني. يعمل بنسبة 100% بدون إنترنت لحساب مواقيت الصلاة، قراءة المصحف الشريف، الأذكار والمسبحة، وبوصلة القبلة.',
+                        style: TextStyle(fontSize: 13, height: 1.6, color: AppColors.text(context)),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
                         'ندعوكم أن تدعوا لصاحب هذا التطبيق بالهداية، وصلاح الحال، والتوفيق الدائم في مستقبله.',
                         style: TextStyle(fontSize: 13, height: 1.6, color: AppColors.brand(context), fontWeight: FontWeight.w600),
                       ),
