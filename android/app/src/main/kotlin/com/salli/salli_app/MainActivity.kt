@@ -87,9 +87,30 @@ class MainActivity : FlutterActivity() {
                         scheduleAdhanAlerts(items, muezzinId)
                         result.success(null)
                     }
+                    "cancelAdhanAlerts" -> {
+                        cancelAlarms(AdhanAlarmReceiver::class.java, 9400)
+                        result.success(null)
+                    }
+                    "cancelPrayerBlocks" -> {
+                        cancelAlarms(PrayerBlockReceiver::class.java, 9000)
+                        cancelAlarms(PrayerAutoUnlockReceiver::class.java, 9200)
+                        result.success(null)
+                    }
                     else -> result.notImplemented()
                 }
             }
+    }
+
+    private fun cancelAlarms(receiver: Class<*>, baseCode: Int, count: Int = 100) {
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        for (i in 0 until count) {
+            val pending = PendingIntent.getBroadcast(
+                this, baseCode + i, Intent(this, receiver),
+                PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+            ) ?: continue
+            alarmManager.cancel(pending)
+            pending.cancel()
+        }
     }
 
     private fun hasOverlayPermission(): Boolean =
@@ -178,6 +199,8 @@ class MainActivity : FlutterActivity() {
         val canScheduleExact =
             Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()
         if (!canScheduleExact) return
+        cancelAlarms(PrayerBlockReceiver::class.java, 9000)
+        cancelAlarms(PrayerAutoUnlockReceiver::class.java, 9200)
 
         items.forEachIndexed { index, item ->
             val millis = (item["millis"] as? Number)?.toLong() ?: return@forEachIndexed
@@ -208,6 +231,7 @@ class MainActivity : FlutterActivity() {
         val canScheduleExact =
             Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()
         if (!canScheduleExact) return
+        cancelAlarms(AdhanAlarmReceiver::class.java, 9400)
 
         items.forEachIndexed { index, item ->
             val millis = (item["millis"] as? Number)?.toLong() ?: return@forEachIndexed

@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tz_data;
@@ -128,17 +129,38 @@ class NotificationService {
       // نتخطى أي وقت فات بالفعل اليوم
       if (scheduled.isBefore(now)) continue;
 
-      await _plugin.zonedSchedule(
-        id++,
-        'حان الآن وقت صلاة ${prayer.nameAr}',
-        'حي على الصلاة، حي على الفلاح',
-        scheduled,
-        notificationDetails,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-        matchDateTimeComponents: null,
-      );
+      final notificationId = id++;
+      final title = 'حان الآن وقت صلاة ${prayer.nameAr}';
+      const body = 'حي على الصلاة، حي على الفلاح';
+      try {
+        await _plugin.zonedSchedule(
+          notificationId,
+          title,
+          body,
+          scheduled,
+          notificationDetails,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+          matchDateTimeComponents: null,
+        );
+      } on PlatformException {
+        // لو صلاحية "المنبهات الدقيقة" اتسحبت من المستخدم، بدل ما الجدولة
+        // كلها تفشل نرجع لتوقيت تقريبي (ممكن يتأخر دقايق) أحسن من مفيش إشعار.
+        try {
+          await _plugin.zonedSchedule(
+            notificationId,
+            title,
+            body,
+            scheduled,
+            notificationDetails,
+            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+            uiLocalNotificationDateInterpretation:
+                UILocalNotificationDateInterpretation.absoluteTime,
+            matchDateTimeComponents: null,
+          );
+        } catch (_) {}
+      }
     }
   }
 

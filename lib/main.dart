@@ -53,6 +53,20 @@ class SalliApp extends StatelessWidget {
               secondary: _brandGold,
               surface: Colors.white,
             ),
+            switchTheme: SwitchThemeData(
+              thumbColor: WidgetStateProperty.resolveWith((st) =>
+                  st.contains(WidgetState.selected)
+                      ? Colors.white
+                      : const Color(0xFF8A958F)),
+              trackColor: WidgetStateProperty.resolveWith((st) =>
+                  st.contains(WidgetState.selected)
+                      ? _brandGreen
+                      : const Color(0xFFE3E8E5)),
+              trackOutlineColor: WidgetStateProperty.resolveWith((st) =>
+                  st.contains(WidgetState.selected)
+                      ? Colors.transparent
+                      : const Color(0xFFB7C0BB)),
+            ),
             appBarTheme: const AppBarTheme(
               backgroundColor: Color(0xFFF9FAF8),
               elevation: 0,
@@ -120,6 +134,21 @@ class SalliApp extends StatelessWidget {
               labelTextStyle: WidgetStateProperty.all(
                 const TextStyle(fontSize: 11.5, color: Color(0xFFCBD5CF)),
               ),
+            ),
+            switchTheme: SwitchThemeData(
+              // مفعّل: مسار أخضر فاتح + زرار داكن = تباين واضح
+              thumbColor: WidgetStateProperty.resolveWith((st) =>
+                  st.contains(WidgetState.selected)
+                      ? const Color(0xFF07130D)
+                      : const Color(0xFFA3AFA9)),
+              trackColor: WidgetStateProperty.resolveWith((st) =>
+                  st.contains(WidgetState.selected)
+                      ? AppColors.brandDark
+                      : const Color(0xFF2A322E)),
+              trackOutlineColor: WidgetStateProperty.resolveWith((st) =>
+                  st.contains(WidgetState.selected)
+                      ? Colors.transparent
+                      : const Color(0xFF6E7B75)),
             ),
             snackBarTheme: const SnackBarThemeData(
               backgroundColor: Color(0xFF242B28),

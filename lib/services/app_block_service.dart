@@ -169,6 +169,21 @@ class AppBlockService {
     } catch (_) {}
   }
 
+  /// يلغي كل تنبيهات الأذان الأصلية (native) المجدولة، عشان لما المستخدم
+  /// يقفل "تنبيهات الأذان" ما يفضلش الأذان يشتغل من جدولة قديمة.
+  Future<void> cancelAdhanAlerts() async {
+    try {
+      await _channel.invokeMethod('cancelAdhanAlerts');
+    } catch (_) {}
+  }
+
+  /// يلغي كل منبهات قفل التطبيقات وقت الصلاة (لما الوقف الذكي يتقفل).
+  Future<void> cancelPrayerBlocks() async {
+    try {
+      await _channel.invokeMethod('cancelPrayerBlocks');
+    } catch (_) {}
+  }
+
   /// يجدول شاشة أذان كاملة الشاشة بتشغّل صوت الأذان الحقيقي (من
   /// res/raw/<muezzinId>.mp3) بالظبط لحظة دخول وقت كل صلاة — بغض
   /// النظر عن تفعيل ميزة الوقف الذكي من عدمه.

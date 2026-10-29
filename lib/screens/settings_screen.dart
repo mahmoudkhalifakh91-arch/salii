@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../services/settings_service.dart';
 import '../services/audio_service.dart';
 import '../services/notification_service.dart';
+import '../services/prayer_scheduler.dart';
 import '../services/location_service.dart';
-import '../services/prayer_service.dart';
 import '../services/app_block_service.dart';
 import '../services/theme_controller.dart';
 import 'app_block_screen.dart';
@@ -56,35 +56,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _rescheduleNotifications() async {
     if (!_notificationsEnabled) {
       await NotificationService.instance.cancelAll();
+      await AppBlockService.instance.cancelAdhanAlerts();
       return;
     }
     final location = await LocationService.instance.getCurrentLocation();
-    final prayers = PrayerService.calculateTodayPrayers(
+    await PrayerScheduler.rescheduleAll(
       latitude: location.latitude,
       longitude: location.longitude,
       methodKey: _calcMethod,
+      muezzinId: _muezzin,
+      notificationsEnabled: true,
+      appBlockEnabled: await SettingsService.instance.getAppBlockEnabled(),
     );
-    final toSchedule = prayers.any((p) => p.isNext)
-        ? prayers
-        : PrayerService.calculateTodayPrayers(
-            latitude: location.latitude,
-            longitude: location.longitude,
-            methodKey: _calcMethod,
-            forDate: DateTime.now().add(const Duration(days: 1)),
-          );
-    await NotificationService.instance
-        .scheduleForPrayers(toSchedule, muezzinId: _muezzin);
-
-    await AppBlockService.instance.scheduleAdhanAlerts(
-      toSchedule.map((p) => (name: p.nameAr, time: p.time)).toList(),
-      _muezzin,
-    );
-
-    if (await SettingsService.instance.getAppBlockEnabled()) {
-      await AppBlockService.instance.schedulePrayerBlocks(
-        toSchedule.map((p) => (name: p.nameAr, time: p.time)).toList(),
-      );
-    }
   }
 
   Future<void> _previewMuezzinSound() async {
@@ -197,7 +180,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     children: [
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
-                        activeColor: AppColors.brand(context),
                         title: const Text('تحديد الموقع تلقائياً (GPS)'),
                         subtitle: const Text('حساب مواقيت الصلاة بدقة حسب مكانك الفعلي'),
                         value: _useGPS,
@@ -210,7 +192,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       const Divider(),
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
-                        activeColor: AppColors.brand(context),
                         title: const Text('تنبيهات الأذان'),
                         subtitle: const Text('إرسال إشعار عند دخول وقت كل صلاة'),
                         value: _notificationsEnabled,
@@ -237,13 +218,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   child: SwitchListTile(
                     contentPadding: EdgeInsets.zero,
-                    activeColor: AppColors.brand(context),
-                    secondary: Icon(
-                      _darkMode ? Icons.dark_mode : Icons.light_mode,
-                      color: AppColors.brand(context),
+                    secondary: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: AppColors.brandTint(context),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        _darkMode ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                        size: 22,
+                        color: _darkMode
+                            ? AppColors.accent(context)
+                            : AppColors.brand(context),
+                      ),
                     ),
-                    title: const Text('الوضع الليلي (Dark Mode)'),
-                    subtitle: const Text('تفعيل الألوان الداكنة في كل شاشات التطبيق'),
+                    title: Text(
+                      'الوضع الليلي',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.text(context),
+                      ),
+                    ),
+                    subtitle: Text(
+                      _darkMode ? 'مفعّل — ألوان داكنة مريحة للعين' : 'غير مفعّل — الألوان الفاتحة',
+                      style: TextStyle(color: AppColors.muted(context), fontSize: 12.5),
+                    ),
                     value: _darkMode,
                     onChanged: (v) async {
                       setState(() => _darkMode = v);
@@ -319,16 +319,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'تطبيق صلي (Salli)',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.brand(context)),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'تطبيق إسلامي مجاني وخالٍ من الإعلانات تماماً. يعمل بنسبة 100% بدون إنترنت لحساب مواقيت الصلاة، قراءة المصحف الشريف، الأذكار والمسبحة، وبوصلة القبلة.',
-                        style: TextStyle(fontSize: 13, height: 1.6, color: AppColors.text(context)),
-                      ),
-                      const SizedBox(height: 10),
                       Text(
                         'ندعوكم أن تدعوا لصاحب هذا التطبيق بالهداية، وصلاح الحال، والتوفيق الدائم في مستقبله.',
                         style: TextStyle(fontSize: 13, height: 1.6, color: AppColors.brand(context), fontWeight: FontWeight.w600),

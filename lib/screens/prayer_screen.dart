@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import '../services/prayer_service.dart';
 import '../services/location_service.dart';
 import '../services/settings_service.dart';
-import '../services/notification_service.dart';
+import '../services/prayer_scheduler.dart';
 import '../services/app_block_service.dart';
 import '../models/prayer_model.dart';
 import 'prayer_log_screen.dart';
@@ -27,6 +27,11 @@ class _PrayerScreenState extends State<PrayerScreen> {
   bool _locationIsFallback = false;
   Set<String> _donePrayerIds = {};
   int _streak = 0;
+  // آخر موقع وطريقة حساب استُخدموا، عشان نعيد حساب "الصلاة القادمة" لاحقًا
+  // بنفس الإعدادات (كانت بتتحسب بإحداثيات القاهرة الافتراضية بعد العشاء).
+  double _latitude = PrayerService.defaultLat;
+  double _longitude = PrayerService.defaultLng;
+  String _calcMethod = 'egypt';
 
   @override
   void initState() {
@@ -58,6 +63,9 @@ class _PrayerScreenState extends State<PrayerScreen> {
 
     if (!mounted) return;
     setState(() {
+      _latitude = location.latitude;
+      _longitude = location.longitude;
+      _calcMethod = calcMethod;
       _prayers = prayers;
       _locationLabel = location.cityLabel;
       _locationIsFallback = location.isFallback;
@@ -69,43 +77,32 @@ class _PrayerScreenState extends State<PrayerScreen> {
     });
     _updateCountdown();
 
-    // نحدّث ودجت الشاشة الرئيسية بمواقيت اليوم + فجر بكرة (عشان يفضل
-    // معاه صلاة يعرضها كـ"القادمة" حتى بعد ما العشاء يفوت).
-    final tomorrowFajrList = PrayerService.calculateTodayPrayers(
+    // نحدّث ودجت الشاشة الرئيسية بالصلوات الجاية (٣ أيام) عشان يفضل معاه
+    // صلاة يعرضها كـ"القادمة" حتى بعد العشاء، ومن غير ما نحسب بإحداثيات غلط.
+    final widgetPrayers = PrayerService.upcomingPrayers(
       latitude: location.latitude,
       longitude: location.longitude,
       methodKey: calcMethod,
-      forDate: DateTime.now().add(const Duration(days: 1)),
+      days: 3,
     );
-    final tomorrowFajr = tomorrowFajrList.firstWhere((p) => p.id == 'fajr');
-    await AppBlockService.instance.updateWidgetData([
-      ...prayers
-          .where((p) => p.id != 'sunrise')
-          .map((p) => (id: p.id, nameAr: p.nameAr, time: p.time)),
-      (id: 'fajr_tomorrow', nameAr: tomorrowFajr.nameAr, time: tomorrowFajr.time),
-    ]);
+    await AppBlockService.instance.updateWidgetData(
+      widgetPrayers
+          .map((p) => (id: p.id, nameAr: p.nameAr, time: p.time))
+          .toList(),
+    );
 
-    if (notificationsEnabled) {
-      // لو الصلاة القادمة "isNext" رجعت null (يعني كل صلوات اليوم فاتت)،
-      // بنجدول بمواقيت بكرة عشان الفجر يتظبط صح
-      final toSchedule = _prayers.any((p) => p.isNext)
-          ? _prayers
-          : PrayerService.calculateTodayPrayers(
-              latitude: location.latitude,
-              longitude: location.longitude,
-              methodKey: calcMethod,
-              forDate: DateTime.now().add(const Duration(days: 1)),
-            );
-      final muezzinId = await SettingsService.instance.getMuezzin();
-      await NotificationService.instance
-          .scheduleForPrayers(toSchedule, muezzinId: muezzinId);
-      await AppBlockService.instance.scheduleAdhanAlerts(
-        toSchedule.map((p) => (name: p.nameAr, time: p.time)).toList(),
-        muezzinId,
-      );
-    } else {
-      await NotificationService.instance.cancelAll();
-    }
+    // جدولة الإشعارات وشاشة الأذان وقفل التطبيقات لـ ٧ أيام قدّام (مش باقي
+    // النهارده بس)، عشان الفجر وباقي الصلوات ترن حتى لو التطبيق ما اتفتحش.
+    final muezzinId = await SettingsService.instance.getMuezzin();
+    final appBlockEnabled = await SettingsService.instance.getAppBlockEnabled();
+    await PrayerScheduler.rescheduleAll(
+      latitude: location.latitude,
+      longitude: location.longitude,
+      methodKey: calcMethod,
+      muezzinId: muezzinId,
+      notificationsEnabled: notificationsEnabled,
+      appBlockEnabled: appBlockEnabled,
+    );
   }
 
   /// يدمج تأكيدات "والله العظيم صليت" اللي حصلت من شاشة القفل الأصلية
@@ -149,13 +146,31 @@ class _PrayerScreenState extends State<PrayerScreen> {
     final now = DateTime.now();
     var diff = _nextPrayer!.time.difference(now);
     if (diff.isNegative) {
-      // كل صلوات اليوم فاتت -> نحسب فجر بكرة بدقة بدل رقم تقريبي ثابت
-      final tomorrow = PrayerService.calculateTodayPrayers(
-        forDate: DateTime.now().add(const Duration(days: 1)),
+      // وقت الصلاة اللي كنا مستنيينها جه: نعيد حساب "الصلاة القادمة" من
+      // المواقيت الحالية (قبل كده كان العدّاد بيقفز لفجر بكرة بعد كل صلاة).
+      final refreshed = PrayerService.calculateTodayPrayers(
+        latitude: _latitude,
+        longitude: _longitude,
+        methodKey: _calcMethod,
       );
-      final tomorrowFajr = tomorrow.firstWhere((p) => p.id == 'fajr');
-      diff = tomorrowFajr.time.difference(now);
+      final upcoming = refreshed.where((p) => p.isNext).toList();
+      _prayers = refreshed;
+      if (upcoming.isNotEmpty) {
+        _nextPrayer = upcoming.first;
+        diff = _nextPrayer!.time.difference(now);
+      } else {
+        // كل صلوات اليوم فاتت -> العدّاد لفجر بكرة بإحداثيات المستخدم الفعلية
+        final tomorrow = PrayerService.calculateTodayPrayers(
+          latitude: _latitude,
+          longitude: _longitude,
+          methodKey: _calcMethod,
+          forDate: now.add(const Duration(days: 1)),
+        );
+        final tomorrowFajr = tomorrow.firstWhere((p) => p.id == 'fajr');
+        diff = tomorrowFajr.time.difference(now);
+      }
     }
+    if (!mounted) return;
     setState(() {
       _timeRemaining = diff;
     });

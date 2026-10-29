@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/blockable_app_model.dart';
 import '../services/app_block_service.dart';
+import '../services/prayer_scheduler.dart';
 import '../services/settings_service.dart';
 import '../services/location_service.dart';
 import '../services/prayer_service.dart';
@@ -105,15 +106,22 @@ class _AppBlockScreenState extends State<AppBlockScreen>
     await SettingsService.instance.setAppBlockEnabled(value);
     if (value) {
       await _scheduleTodayBlocks();
+    } else {
+      // لو الوقف الذكي اتقفل، لازم نلغي المنبهات المجدولة وإلا التطبيقات
+      // كانت هتتقفل وقت الصلاة رغم إن المستخدم قفل الميزة.
+      await AppBlockService.instance.cancelPrayerBlocks();
     }
   }
 
   Future<void> _scheduleTodayBlocks() async {
     try {
       final location = await LocationService.instance.getCurrentLocation();
-      final prayers = PrayerService.calculateTodayPrayers(
+      final calcMethod = await SettingsService.instance.getCalcMethod();
+      final prayers = PrayerService.upcomingPrayers(
         latitude: location.latitude,
         longitude: location.longitude,
+        methodKey: calcMethod,
+        days: PrayerScheduler.daysAhead,
       );
       await AppBlockService.instance.schedulePrayerBlocks(
         prayers.map((p) => (name: p.nameAr, time: p.time)).toList(),

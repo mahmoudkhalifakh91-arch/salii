@@ -69,6 +69,33 @@ class PrayerService {
     }).toList();
   }
 
+  /// كل الصلوات الفعلية (من غير الشروق) اللي لسه وقتها ما جاش خلال الأيام
+  /// الجاية، مرتّبة بالوقت. بتتستخدم في جدولة الإشعارات والأذان لعدة أيام
+  /// قدّام، عشان الأذان يشتغل حتى لو المستخدم ما فتحش التطبيق لأيام.
+  static List<PrayerInfo> upcomingPrayers({
+    double latitude = defaultLat,
+    double longitude = defaultLng,
+    String methodKey = 'egypt',
+    int days = 7,
+  }) {
+    final now = DateTime.now();
+    final result = <PrayerInfo>[];
+    for (var i = 0; i < days; i++) {
+      final day = DateTime(now.year, now.month, now.day + i, 12);
+      final prayers = calculateTodayPrayers(
+        latitude: latitude,
+        longitude: longitude,
+        methodKey: methodKey,
+        forDate: day,
+      );
+      for (final p in prayers) {
+        if (p.id == 'sunrise') continue;
+        if (p.time.isAfter(now)) result.add(p);
+      }
+    }
+    return result;
+  }
+
   static String formatTime(DateTime time, {String locale = 'ar'}) {
     return DateFormat('h:mm a', locale).format(time);
   }
