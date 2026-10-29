@@ -50,6 +50,8 @@ class SalliAccessibilityService : AccessibilityService() {
     }
 
     private fun launchLockScreen() {
+        // شاشة الأذان لها الأولوية — ما نغطيهاش بشاشة القفل
+        if (AdhanAlertActivity.shouldSuppressLock()) return
         // نتجنب فتح الشاشة أكتر من مرة في وقت قصير جدًا (تكرار أحداث accessibility)
         val now = System.currentTimeMillis()
         if (now - lastBlockedLaunch < 800) return

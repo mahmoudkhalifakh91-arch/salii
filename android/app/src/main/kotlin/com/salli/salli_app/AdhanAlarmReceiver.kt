@@ -27,13 +27,18 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
         val prayerName = intent.getStringExtra(EXTRA_PRAYER_NAME) ?: "الصلاة"
         val muezzinId = intent.getStringExtra(EXTRA_MUEZZIN_ID) ?: "abdul_basit"
 
+        // شاشة الأذان لازم تظهر فوق شاشة قفل التطبيقات، فنوقف فتح شاشة
+        // القفل لحظيًا لحد ما شاشة الأذان تظهر (وبعدها isShowing بيكمّل).
+        AdhanAlertActivity.suppressLockUntil = System.currentTimeMillis() + 20_000L
+
         val fullScreenIntent = Intent(context, AdhanAlertActivity::class.java).apply {
             putExtra(EXTRA_PRAYER_NAME, prayerName)
             putExtra(EXTRA_MUEZZIN_ID, muezzinId)
             addFlags(
                 Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                    Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                    Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
             )
         }
         val fullScreenPendingIntent = PendingIntent.getActivity(

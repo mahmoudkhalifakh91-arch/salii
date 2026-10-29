@@ -25,6 +25,19 @@ import android.widget.TextView
  */
 class AdhanAlertActivity : Activity() {
 
+    companion object {
+        /** true طول ما شاشة الأذان ظاهرة — خدمة القفل ما تغطيهاش. */
+        @Volatile
+        var isShowing = false
+
+        /** نافذة قصيرة بعد وصول تنبيه الأذان لحد ما الشاشة تظهر فعلاً. */
+        @Volatile
+        var suppressLockUntil = 0L
+
+        fun shouldSuppressLock(): Boolean =
+            isShowing || System.currentTimeMillis() < suppressLockUntil
+    }
+
     private var mediaPlayer: MediaPlayer? = null
     private val handler = Handler(Looper.getMainLooper())
     private var isPlaying = false
@@ -38,6 +51,7 @@ class AdhanAlertActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        isShowing = true
         window.addFlags(
             WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
                 WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
@@ -173,6 +187,8 @@ class AdhanAlertActivity : Activity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        isShowing = false
+        suppressLockUntil = 0L
         handler.removeCallbacksAndMessages(null)
         try {
             mediaPlayer?.stop()
