@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../services/app_block_service.dart';
 import '../theme/app_colors.dart';
+import '../widgets/accessibility_disclosure.dart';
 
 const _brandGreen = Color(0xFF0F5132);
 
@@ -11,6 +12,7 @@ class _WizardStep {
   final IconData icon;
   final Future<bool> Function() isGranted;
   final Future<void> Function() request;
+  final bool requiresDisclosure;
 
   const _WizardStep({
     required this.title,
@@ -18,10 +20,11 @@ class _WizardStep {
     required this.icon,
     required this.isGranted,
     required this.request,
+    this.requiresDisclosure = false,
   });
 }
 
-/// شاشة "خطوة بخطوة" لتفعيل الأذونات الثلاثة المطلوبة لميزة الوقف
+/// شاشة "خطوة بخطوة" لتفعيل الأذونات المطلوبة لميزة الوقف
 /// الذكي، بدل ما المستخدم يدوّر في قائمة طويلة. كل صلاحية في شاشتها
 /// المستقلة، وأول ما المستخدم يرجع من إعدادات أندرويد (بعد ما يفعّل
 /// الصلاحية من هناك)، الشاشة بتكتشف ده تلقائياً وتنقله للخطوة الجاية
@@ -57,14 +60,8 @@ class _PermissionWizardScreenState extends State<PermissionWizardScreen>
         description: 'تمكّن نظام صلّي من رصد التطبيقات المشتتة وإغلاقها فوراً وقت الصلاة.',
         icon: Icons.shield_moon_rounded,
         isGranted: () => AppBlockService.instance.isAccessibilityServiceEnabled(),
+        requiresDisclosure: true,
         request: () => AppBlockService.instance.requestAccessibilityPermission(),
-      ),
-      _WizardStep(
-        title: 'الوصول لإحصائيات الاستخدام',
-        description: 'يسمح للتطبيق بمعرفة التطبيق الشغّال حالياً في مقدمة الشاشة.',
-        icon: Icons.bar_chart_rounded,
-        isGranted: () => AppBlockService.instance.hasUsageStatsPermission(),
-        request: () => AppBlockService.instance.requestUsageStatsPermission(),
       ),
     ];
     _skipAlreadyGrantedSteps();
@@ -188,6 +185,10 @@ class _PermissionWizardScreenState extends State<PermissionWizardScreen>
               onPressed: _checking
                   ? null
                   : () async {
+                      if (step.requiresDisclosure &&
+                          !await confirmAccessibilityDisclosure(context)) {
+                        return;
+                      }
                       await step.request();
                     },
               child: _checking

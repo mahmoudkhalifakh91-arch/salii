@@ -1,3 +1,4 @@
+import '../widgets/accessibility_disclosure.dart';
 import 'package:flutter/material.dart';
 import 'main_navigation_screen.dart';
 import '../services/app_block_service.dart';
@@ -113,8 +114,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     subtitle:
                         'يُستخدم هذا الإذن فقط لقفل التطبيقات عند حلول وقت الصلاة. لا نقرأ أو نرى أو نخزّن أي شيء يظهر على شاشتك.',
                     onAllow: () async {
-                      await AppBlockService.instance
-                          .requestAccessibilityPermission();
+                      if (await confirmAccessibilityDisclosure(context)) {
+                        await AppBlockService.instance
+                            .requestAccessibilityPermission();
+                      }
                       await _next();
                     },
                     onSkip: _next,

@@ -24,13 +24,12 @@ class _AppBlockScreenState extends State<AppBlockScreen>
 
   bool _overlayGranted = false;
   bool _accessibilityGranted = false;
-  bool _usageStatsGranted = false;
 
   bool _masterEnabled = false;
   final Set<String> _selectedPackages = {};
 
   bool get _allPermissionsGranted =>
-      _overlayGranted && _accessibilityGranted && _usageStatsGranted;
+      _overlayGranted && _accessibilityGranted;
 
   @override
   void initState() {
@@ -72,12 +71,10 @@ class _AppBlockScreenState extends State<AppBlockScreen>
     final overlay = await AppBlockService.instance.hasOverlayPermission();
     final accessibility =
         await AppBlockService.instance.isAccessibilityServiceEnabled();
-    final usageStats = await AppBlockService.instance.hasUsageStatsPermission();
     if (!mounted) return;
     setState(() {
       _overlayGranted = overlay;
       _accessibilityGranted = accessibility;
-      _usageStatsGranted = usageStats;
     });
   }
 
@@ -212,15 +209,13 @@ class _AppBlockScreenState extends State<AppBlockScreen>
           ),
           const SizedBox(height: 4),
           Text(
-            'لازم توافق على 3 أذونات عشان تطبيق صلّي يقدر يقفل التطبيقات المشتتة تلقائياً وقت الصلاة',
+            'لازم توافق على إذنين عشان تطبيق صلّي يقدر يقفل التطبيقات المشتتة تلقائياً وقت الصلاة',
             style: TextStyle(fontSize: 12.5, color: AppColors.muted(context), height: 1.5),
           ),
           const SizedBox(height: 14),
           _permissionStatusRow('الظهور فوق التطبيقات', _overlayGranted),
           const SizedBox(height: 8),
           _permissionStatusRow('خدمة إمكانية الوصول', _accessibilityGranted),
-          const SizedBox(height: 8),
-          _permissionStatusRow('الوصول لإحصائيات الاستخدام', _usageStatsGranted),
           const SizedBox(height: 14),
           SizedBox(
             width: double.infinity,
