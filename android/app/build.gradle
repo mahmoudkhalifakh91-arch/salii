@@ -46,8 +46,24 @@ android {
 
     buildTypes {
         release {
-            signingConfig = keystorePropertiesFile.exists() ? signingConfigs.release : signingConfigs.debug
+            // لا نوقّع نسخة الإصدار بمفتاح debug أبدًا: لو مفيش keystore البناء يفشل
+            // برسالة واضحة بدل ما يطلع AAB بتوقيع غلط ترفضه Google Play.
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.release
+            }
         }
+    }
+}
+
+gradle.taskGraph.whenReady { graph ->
+    def releaseTask = graph.allTasks.find {
+        it.name.toLowerCase().contains("release") &&
+            (it.name.startsWith("bundle") || it.name.startsWith("assemble") || it.name.startsWith("package"))
+    }
+    if (releaseTask != null && !keystorePropertiesFile.exists()) {
+        throw new GradleException(
+            "android/key.properties غير موجود: لا يمكن بناء نسخة Release موقّعة. " +
+            "أنشئ key.properties (storeFile/storePassword/keyAlias/keyPassword) أو اضبط التوقيع في Codemagic.")
     }
 }
 

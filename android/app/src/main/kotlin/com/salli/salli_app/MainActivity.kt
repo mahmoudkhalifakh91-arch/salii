@@ -76,7 +76,7 @@ class MainActivity : FlutterActivity() {
                     "schedulePrayerBlocks" -> {
                         val items = (call.arguments as? List<*>)
                             ?.mapNotNull { it as? Map<*, *> } ?: emptyList()
-                        schedulePrayerBlocks(items)
+                        AlarmScheduler.schedulePrayerBlocks(applicationContext, items)
                         result.success(null)
                     }
                     "scheduleAdhanAlerts" -> {
@@ -84,33 +84,20 @@ class MainActivity : FlutterActivity() {
                         val items = (args?.get("prayers") as? List<*>)
                             ?.mapNotNull { it as? Map<*, *> } ?: emptyList()
                         val muezzinId = args?.get("muezzinId") as? String ?: "abdul_basit"
-                        scheduleAdhanAlerts(items, muezzinId)
+                        AlarmScheduler.scheduleAdhanAlerts(applicationContext, items, muezzinId)
                         result.success(null)
                     }
                     "cancelAdhanAlerts" -> {
-                        cancelAlarms(AdhanAlarmReceiver::class.java, 9400)
+                        AlarmScheduler.cancelAdhanAlerts(applicationContext)
                         result.success(null)
                     }
                     "cancelPrayerBlocks" -> {
-                        cancelAlarms(PrayerBlockReceiver::class.java, 9000)
-                        cancelAlarms(PrayerAutoUnlockReceiver::class.java, 9200)
+                        AlarmScheduler.cancelPrayerBlocks(applicationContext)
                         result.success(null)
                     }
                     else -> result.notImplemented()
                 }
             }
-    }
-
-    private fun cancelAlarms(receiver: Class<*>, baseCode: Int, count: Int = 100) {
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        for (i in 0 until count) {
-            val pending = PendingIntent.getBroadcast(
-                this, baseCode + i, Intent(this, receiver),
-                PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
-            ) ?: continue
-            alarmManager.cancel(pending)
-            pending.cancel()
-        }
     }
 
     private fun hasOverlayPermission(): Boolean =
@@ -192,61 +179,5 @@ class MainActivity : FlutterActivity() {
         val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         startActivity(intent)
-    }
-
-    private fun schedulePrayerBlocks(items: List<Map<*, *>>) {
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val canScheduleExact =
-            Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()
-        if (!canScheduleExact) return
-        cancelAlarms(PrayerBlockReceiver::class.java, 9000)
-        cancelAlarms(PrayerAutoUnlockReceiver::class.java, 9200)
-
-        items.forEachIndexed { index, item ->
-            val millis = (item["millis"] as? Number)?.toLong() ?: return@forEachIndexed
-            val name = item["name"] as? String ?: ""
-            if (millis <= System.currentTimeMillis()) return@forEachIndexed
-
-            val lockIntent = Intent(this, PrayerBlockReceiver::class.java).apply {
-                putExtra(PrayerBlockReceiver.EXTRA_PRAYER_NAME, name)
-            }
-            val lockPending = PendingIntent.getBroadcast(
-                this, 9000 + index, lockIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, millis, lockPending)
-
-            val unlockIntent = Intent(this, PrayerAutoUnlockReceiver::class.java)
-            val unlockPending = PendingIntent.getBroadcast(
-                this, 9200 + index, unlockIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            val autoUnlockMillis = millis + 5 * 60 * 1000L
-            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, autoUnlockMillis, unlockPending)
-        }
-    }
-
-    private fun scheduleAdhanAlerts(items: List<Map<*, *>>, muezzinId: String) {
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val canScheduleExact =
-            Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()
-        if (!canScheduleExact) return
-        cancelAlarms(AdhanAlarmReceiver::class.java, 9400)
-
-        items.forEachIndexed { index, item ->
-            val millis = (item["millis"] as? Number)?.toLong() ?: return@forEachIndexed
-            val name = item["name"] as? String ?: ""
-            if (millis <= System.currentTimeMillis()) return@forEachIndexed
-
-            val intent = Intent(this, AdhanAlarmReceiver::class.java).apply {
-                putExtra(AdhanAlarmReceiver.EXTRA_PRAYER_NAME, name)
-                putExtra(AdhanAlarmReceiver.EXTRA_MUEZZIN_ID, muezzinId)
-            }
-            val pendingIntent = PendingIntent.getBroadcast(
-                this, 9400 + index, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, millis, pendingIntent)
-        }
     }
 }

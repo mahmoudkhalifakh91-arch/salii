@@ -22,9 +22,23 @@ workflows:
       - name: Build debug APK (fast sanity build)
         script: |
           flutter build apk --debug --verbose
+      - name: Prepare release signing (from Codemagic environment variables)
+        script: |
+          # أضف المتغيرات دي في Codemagic (Environment variables، مشفّرة):
+          # CM_KEYSTORE_PATH (مسار ملف الـ keystore بعد رفعه)، CM_KEYSTORE_PASSWORD،
+          # CM_KEY_ALIAS، CM_KEY_PASSWORD. لو مش موجودة وفي android/key.properties
+          # موجود أصلاً، هيُستخدم.
+          if [ -n "$CM_KEYSTORE_PATH" ]; then
+            cat > android/key.properties <<EOF
+          storePassword=$CM_KEYSTORE_PASSWORD
+          keyPassword=$CM_KEY_PASSWORD
+          keyAlias=$CM_KEY_ALIAS
+          storeFile=$CM_KEYSTORE_PATH
+          EOF
+          fi
       - name: Build release AAB (for Play Store upload)
         script: |
-          flutter build appbundle --release --verbose
+          flutter build appbundle --release --build-number=$BUILD_NUMBER --verbose
     artifacts:
       - build/app/outputs/**/*.apk
       - build/app/outputs/**/*.aab
